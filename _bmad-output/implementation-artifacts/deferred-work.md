@@ -7,3 +7,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-vexiom-home-page.md`
   summary: Add a fallback contact path (visible/copyable email text, or a real contact form) alongside the mailto: CTAs.
   evidence: Blind Hunter review flagged that every CTA on the page is a mailto: link with no fallback for visitors without a configured mail client. Real conversion-path risk, but mailto-only matches home-reference.html exactly and the user already confirmed contato@vexiom.com.br as the channel for this pass; docs/plans/06-operacao-comercial-e-contato.md already earmarks a proper interest form as a later phase — revisit then.
+- source_spec: `_bmad-output/implementation-artifacts/spec-tailwind-header-hero.md`
+  summary: Migrate Header styling (site-header.tsx, primary-nav.tsx) from globals.css to Tailwind utility classes.
+  evidence: Original spec covered Header + Hero together but exceeded the ~1600-token spec size guideline; split into two independently shippable deliverables. Hero goes first (contains the button the user specifically wants to resize); Header follows as its own spec once Hero migration is verified.

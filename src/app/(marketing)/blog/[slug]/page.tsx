@@ -35,7 +35,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <>
       <PageHero eyebrow="Blog" title={post.title} />
-      <section className="page-section">
+      <section className="py-[calc(50*var(--unit))] px-[calc(94*var(--unit))]">
         <p>{post.content}</p>
       </section>
     </>

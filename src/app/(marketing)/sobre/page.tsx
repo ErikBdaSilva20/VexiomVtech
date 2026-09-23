@@ -16,7 +16,10 @@ export default function SobrePage() {
         title="Tecnologia com direção clara."
         description="A Vexiom nasceu para transformar ideias em sistemas que funcionam. Combinamos engenharia de software e visão de negócio para entregar soluções que geram resultado, não só código."
       />
-      <section className="page-section" aria-labelledby="sobre-missao-title">
+      <section
+        className="py-[calc(50*var(--unit))] px-[calc(94*var(--unit))]"
+        aria-labelledby="sobre-missao-title"
+      >
         <h2 id="sobre-missao-title">Nossa missão</h2>
         <p>
           Ajudar negócios a crescerem com estrutura, substituindo processos

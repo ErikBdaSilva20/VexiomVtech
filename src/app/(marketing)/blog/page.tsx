@@ -18,9 +18,12 @@ export default function BlogPage() {
         title="Conteúdo para quem constrói."
         description="Ideias, sistemas e automações explicados sem enrolação."
       />
-      <section className="page-section" aria-label="Lista de posts">
+      <section
+        className="py-[calc(50*var(--unit))] px-[calc(94*var(--unit))]"
+        aria-label="Lista de posts"
+      >
         {BLOG_POSTS.length > 0 ? (
-          <div className="card-grid">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(calc(220*var(--unit)),1fr))] gap-[calc(13*var(--unit))]">
             {BLOG_POSTS.map((post) => (
               <BlogPostCard key={post.slug} post={post} />
             ))}

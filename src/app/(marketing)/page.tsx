@@ -1,7 +1,7 @@
 import { HeroSection } from "@/components/hero/hero-section"
 import { SectionDivider } from "@/components/shared/section-divider"
 import { ProblemsSection } from "@/components/problems/problems-section"
-import { ServicesSection } from "@/components/services/services-section"
+import { ResolutionsSection } from "@/components/resolutions/resolutions-section"
 
 export default function Home() {
   return (
@@ -10,7 +10,7 @@ export default function Home() {
       <SectionDivider />
       <ProblemsSection />
       <SectionDivider direction="rtl" />
-      <ServicesSection />
+      <ResolutionsSection />
     </>
   )
 }

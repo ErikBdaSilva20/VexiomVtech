@@ -18,8 +18,11 @@ export default function ServicosPage() {
         title="Soluções com propósito."
         description="Cada serviço existe para resolver um problema real de operação: presença digital, processos manuais, vendas online ou tempo perdido em tarefas repetitivas."
       />
-      <section className="page-section" aria-label="Lista de serviços">
-        <div className="card-grid">
+      <section
+        className="py-[calc(50*var(--unit))] px-[calc(94*var(--unit))]"
+        aria-label="Lista de serviços"
+      >
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(calc(220*var(--unit)),1fr))] gap-[calc(13*var(--unit))]">
           {SERVICES.map((service) => (
             <ServiceCard key={service.href} service={service} />
           ))}

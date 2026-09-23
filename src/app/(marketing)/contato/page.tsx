@@ -17,7 +17,10 @@ export default function ContatoPage() {
         title="Conte sobre o seu projeto."
         description="Responda algumas perguntas rápidas e entraremos em contato para entender o seu cenário."
       />
-      <section className="page-section" aria-label="Formulário de contato">
+      <section
+        className="py-[calc(50*var(--unit))] px-[calc(94*var(--unit))]"
+        aria-label="Formulário de contato"
+      >
         <ContactForm />
       </section>
     </>
