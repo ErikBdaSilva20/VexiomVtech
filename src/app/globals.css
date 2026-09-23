@@ -269,17 +269,6 @@ html {
 }
 
 /* Desktop dimensions follow the 1600 × 900 reference canvas. */
-/* Pinned state: the header leaves the flow and animates down into a fixed
- * position once the page scrolls past its own height (see site-header.tsx).
- * .site-header-spacer reserves the vacated flow space so nothing jumps. */
-@keyframes site-header-descend {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
 /* .brand-image is still used as a plain class by hero-visual.tsx's SVG
  * brand mark — kept here; the header's own logo now uses Tailwind
  * utilities directly (see site-header.tsx). */
@@ -331,5 +320,12 @@ html {
   *::before,
   *::after {
     transition: none !important;
+  }
+  /* Exception: the pinned header's slide-in is functional navigation
+   * feedback (the bar reappearing after scrolling past it), not decorative
+   * motion. Forced to the same 1s timing as the non-reduced-motion case
+   * regardless of the OS/browser preference, per explicit user request. */
+  .site-header {
+    transition: transform 1000ms cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 }

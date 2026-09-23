@@ -19,6 +19,16 @@ import { ArrowLink } from "@/components/shared/arrow-link"
  * its own height, sliding down into place, and un-pins again on the way
  * back — so the slide-in replays every time the threshold is crossed
  * going down, not just once per page load.
+ *
+ * The slide is a CSS *transition* on transform, not a keyframe animation:
+ * the header mounts as fixed + translated off-screen first (an instant,
+ * invisible change — nothing to animate yet), then a two-frame rAF delay
+ * flips it to translate-y-0 so the transition has a real "from" value to
+ * interpolate. A keyframe animation restarts from its hardcoded 0% every
+ * time the class is reapplied, which snaps instead of easing if isPinned
+ * flips again before the previous run finished (e.g. fast scroll wobble
+ * right at the threshold) — the transition version just reverses smoothly
+ * from wherever it currently is.
  */
 export function SiteHeader() {
   const menuRef = useRef<HTMLDetailsElement>(null)
@@ -26,6 +36,7 @@ export function SiteHeader() {
   const headerRef = useRef<HTMLElement>(null)
   const headerHeightRef = useRef(0)
   const [isPinned, setIsPinned] = useState(false)
+  const [isRevealed, setIsRevealed] = useState(false)
   const [headerHeight, setHeaderHeight] = useState(0)
 
   useEffect(() => {
@@ -33,6 +44,17 @@ export function SiteHeader() {
     headerHeightRef.current = headerRef.current.offsetHeight
     setHeaderHeight(headerRef.current.offsetHeight)
   }, [])
+
+  useEffect(() => {
+    if (!isPinned) {
+      const id = requestAnimationFrame(() => setIsRevealed(false))
+      return () => cancelAnimationFrame(id)
+    }
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setIsRevealed(true))
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [isPinned])
 
   useEffect(() => {
     // A small gap between the pin/unpin thresholds avoids rapid toggling
@@ -108,8 +130,8 @@ export function SiteHeader() {
         ref={headerRef}
         className={
           isPinned
-            ? "fixed top-0 left-0 z-20 w-full h-[calc(64*var(--unit))] bg-[linear-gradient(115deg,#101110ed,#090a09f5)] shadow-[0_calc(10*var(--unit))_calc(30*var(--unit))_#000000b3] animate-[site-header-descend_1s_cubic-bezier(0.65,0,0.35,1)_both] [@media(max-width:1100px)]:h-[64px] [@media(max-width:650px)]:h-[64px] [@media(max-width:360px)]:h-[52px]"
-            : "relative z-[5] h-[calc(64*var(--unit))] bg-[linear-gradient(115deg,#101110ed,#090a09f5)] [@media(max-width:1100px)]:h-[64px] [@media(max-width:650px)]:h-[64px] [@media(max-width:360px)]:h-[52px]"
+            ? `site-header fixed top-0 left-0 z-20 w-full h-[calc(64*var(--unit))] bg-[linear-gradient(115deg,#101110ed,#090a09f5)] shadow-[0_calc(10*var(--unit))_calc(30*var(--unit))_#000000b3] transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform [@media(max-width:1100px)]:h-[64px] [@media(max-width:650px)]:h-[64px] [@media(max-width:360px)]:h-[52px] ${isRevealed ? "translate-y-0" : "-translate-y-full"}`
+            : "site-header relative z-[5] h-[calc(64*var(--unit))] bg-[linear-gradient(115deg,#101110ed,#090a09f5)] [@media(max-width:1100px)]:h-[64px] [@media(max-width:650px)]:h-[64px] [@media(max-width:360px)]:h-[52px]"
         }
       >
         <div
