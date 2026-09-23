@@ -61,6 +61,21 @@ export function IconSprite() {
           <path d="M3 20 11 12 16 17 25 7" />
           <path d="M18 7h7v7" />
         </symbol>
+        <symbol id="message-circle" viewBox="0 0 24 24">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+        </symbol>
+        <symbol id="compass" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+        </symbol>
+        <symbol id="code" viewBox="0 0 24 24">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+        </symbol>
+        <symbol id="shield-check" viewBox="0 0 24 24">
+          <path d="M12 2 4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5z" />
+          <path d="m9 12 2 2 4-4" />
+        </symbol>
       </defs>
     </svg>
   )

@@ -145,6 +145,48 @@ export const RESOLUTIONS: ResolutionItem[] = [
   },
 ]
 
+export type WorkStepIconId = "message-circle" | "compass" | "code" | "shield-check"
+
+export interface WorkStepItem {
+  icon: WorkStepIconId
+  /** "01" – "04", rendered as a small badge on the step. */
+  index: string
+  title: string
+  description: string
+}
+
+/** The four-step process shown in the "Como trabalhamos" Home section. */
+export const WORK_STEPS: WorkStepItem[] = [
+  {
+    icon: "message-circle",
+    index: "01",
+    title: "Conversa inicial",
+    description:
+      "Entendemos o problema na raiz antes de falar de tecnologia ou solução.",
+  },
+  {
+    icon: "compass",
+    index: "02",
+    title: "Definição da solução",
+    description:
+      "Escopo, prioridades e prazos claros, alinhados ao resultado que você precisa.",
+  },
+  {
+    icon: "code",
+    index: "03",
+    title: "Desenvolvimento",
+    description:
+      "Construção com atualizações frequentes, sem surpresas até a entrega.",
+  },
+  {
+    icon: "shield-check",
+    index: "04",
+    title: "Entrega e suporte",
+    description:
+      "Orientação no uso da solução e acompanhamento contínuo depois do lançamento.",
+  },
+]
+
 export const SERVICES: ServiceItem[] = [
   {
     icon: "monitor",

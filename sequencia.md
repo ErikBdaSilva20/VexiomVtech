@@ -9,6 +9,5 @@
    - crescimento sem estrutura
 Depois seguiríamos com:
 4. Como trabalhamos / processo
-5. Cases e resultados
-6. CTA de contato
-7. Footer
+5. CTA de contato
+6. Footer

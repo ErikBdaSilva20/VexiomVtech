@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 import { IconSprite } from "@/components/shared/icon-sprite"
 import { BackgroundArt } from "@/components/shared/background-art"
 import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
 
 /**
  * Chrome shared by every marketing route (home, sobre, serviços, blog,
@@ -21,6 +22,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
         <BackgroundArt />
         <SiteHeader />
         <main id="conteudo">{children}</main>
+        <SiteFooter />
       </div>
     </>
   )

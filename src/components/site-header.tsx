@@ -113,22 +113,22 @@ export function SiteHeader() {
         }
       >
         <div
-          className="absolute top-full left-0 w-full h-[calc(28*var(--unit))] [background-image:linear-gradient(115deg,#101110ed,#090a09f5)] [background-size:100%_calc(138*var(--unit))] [background-position:0_calc(-110*var(--unit))] [clip-path:polygon(42.9375%_0%,57.0625%_0%,55.3125%_100%,44.6875%_100%)] z-[1] pointer-events-none [@media(max-width:1100px)]:hidden"
+          className="absolute top-full left-0 w-full h-[calc(48*var(--unit))] bg-[#0a0b0a] [clip-path:polygon(41.6875%_0%,58.3125%_0%,55.3125%_100%,44.6875%_100%)] z-[1] pointer-events-none [@media(max-width:1100px)]:hidden"
           aria-hidden="true"
         />
         <svg
-          className="absolute bottom-[calc(-28*var(--unit))] left-0 w-full h-[calc(29*var(--unit))] overflow-visible pointer-events-none z-[2] [@media(max-width:1100px)]:hidden"
-          viewBox="0 0 1600 29"
+          className="absolute bottom-[calc(-48*var(--unit))] left-0 w-full h-[calc(49*var(--unit))] overflow-visible pointer-events-none z-[2] [@media(max-width:1100px)]:hidden"
+          viewBox="0 0 1600 49"
           preserveAspectRatio="none"
           aria-hidden="true"
         >
           <path
-            d="M0 0.5h687l28 28h170l28-28h687"
+            d="M0 0.5h667l48 48h170l48-48h667"
             fill="none"
             stroke="#73704d"
             strokeWidth="1"
           />
-          <path d="m687 .5 28 28h170l28-28" stroke="#c6aa12" />
+          <path d="m667 .5 48 48h170l48-48" stroke="#c6aa12" />
         </svg>
         <div className="relative flex justify-between items-center h-full py-0 pr-[calc(68*var(--unit))] pl-[calc(94*var(--unit))] [@media(max-width:1100px)]:pr-[28px] [@media(max-width:1100px)]:pl-[28px] [@media(max-width:650px)]:pr-[21px] [@media(max-width:650px)]:pl-[21px] before:content-[''] before:absolute before:top-[calc(54*var(--unit))] before:h-px before:[background:linear-gradient(90deg,#ffffff03,#ffffff13,#ffffff05)] before:left-[calc(82*var(--unit))] before:w-[calc(648*var(--unit))] [@media(max-width:1100px)]:before:top-[40px] [@media(max-width:1100px)]:before:w-[42%] [@media(max-width:1100px)]:before:left-[28px] [@media(max-width:650px)]:before:left-[21px] [@media(max-width:650px)]:before:w-[41%] after:content-[''] after:absolute after:top-[calc(54*var(--unit))] after:h-px after:[background:linear-gradient(90deg,#ffffff03,#ffffff13,#ffffff05)] after:right-[calc(67*var(--unit))] after:w-[calc(663*var(--unit))] [@media(max-width:1100px)]:after:top-[40px] [@media(max-width:1100px)]:after:w-[42%] [@media(max-width:1100px)]:after:right-[28px] [@media(max-width:650px)]:after:right-[21px] [@media(max-width:650px)]:after:w-[20%]">
           <PrimaryNav
@@ -156,15 +156,18 @@ export function SiteHeader() {
               className="[@media(max-width:1100px)]:absolute [@media(max-width:1100px)]:z-[8] [@media(max-width:1100px)]:top-[54px] [@media(max-width:1100px)]:left-0 [@media(max-width:1100px)]:w-[225px] [@media(max-width:1100px)]:p-[12px] [@media(max-width:1100px)]:border [@media(max-width:1100px)]:border-[#393b33] [@media(max-width:1100px)]:bg-[#11130f] [@media(max-width:1100px)]:shadow-[0_15px_35px_#0009] [@media(max-width:650px)]:left-auto [@media(max-width:650px)]:right-0"
             />
           </details>
-          {/* Centering wrapper: the link only controls the logo's size, this
-              div is what guarantees it stays dead-center in the header
-              (both axes) at any logo size or header height, instead of the
-              hand-tuned top/left offsets that used to drift out of sync. */}
-          <div className="absolute inset-0 z-10 flex items-center justify-center py-[6px] pointer-events-none [@media(max-width:650px)]:justify-start [@media(max-width:650px)]:pl-[21px]">
+          {/* Brand mark hangs down out of the header, nested inside the
+              V-notch cut into the bottom border (the two decorative
+              elements above). Centered horizontally; vertical offset is
+              hand-tuned so the mark's own V lines up with the notch.
+              Below 1100px the notch is hidden, so the mark falls back to
+              simple centering (or left-aligned once the mobile menu takes
+              over the center-right area at 650px). */}
+          <div className="absolute left-1/2 top-[calc(24*var(--unit))] z-10 -translate-x-1/2 pointer-events-none [@media(max-width:1100px)]:top-1/2 [@media(max-width:1100px)]:-translate-y-1/2 [@media(max-width:650px)]:left-[21px] [@media(max-width:650px)]:translate-x-0">
             <Link
               href="/"
               aria-label="Vexiom, voltar ao início"
-              className="block w-[calc(58*var(--unit))] pointer-events-auto [@media(max-width:1100px)]:w-[50px] [@media(max-width:650px)]:w-[56px] [@media(max-width:360px)]:w-[46px]"
+              className="block w-[calc(100*var(--unit))] pointer-events-auto [@media(max-width:1100px)]:w-[50px] [@media(max-width:650px)]:w-[56px] [@media(max-width:360px)]:w-[46px]"
             >
               <Image
                 className="brand-image"
