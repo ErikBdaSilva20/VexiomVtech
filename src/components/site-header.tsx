@@ -50,9 +50,18 @@ export function SiteHeader() {
       const id = requestAnimationFrame(() => setIsRevealed(false))
       return () => cancelAnimationFrame(id)
     }
-    const raf = requestAnimationFrame(() => {
-      requestAnimationFrame(() => setIsRevealed(true))
-    })
+    // React already committed the "hidden" (-translate-y-full) class to the
+    // DOM by the time this effect runs. Reading offsetHeight forces the
+    // browser to flush that style synchronously (a standard reflow-forcing
+    // trick) before we flip to "revealed" one frame later — this is what
+    // guarantees the transition has a real starting value to animate from.
+    // A plain double-rAF (no forced reflow) isn't reliable here: under the
+    // scroll-linked main-thread pressure this code runs under, Chromium can
+    // coalesce both rAF callbacks into a single frame, which skips the
+    // transition entirely and makes the header snap instead of sliding.
+    const node = headerRef.current
+    if (node) void node.offsetHeight
+    const raf = requestAnimationFrame(() => setIsRevealed(true))
     return () => cancelAnimationFrame(raf)
   }, [isPinned])
 
