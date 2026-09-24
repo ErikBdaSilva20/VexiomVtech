@@ -15,3 +15,19 @@ export function startOfNextLocalDay(now: Date): Date {
   const localMidnight = Math.floor(shifted / MS_PER_DAY) * MS_PER_DAY
   return new Date(localMidnight + MS_PER_DAY - SAO_PAULO_OFFSET_MS)
 }
+
+/** The UTC instant of local midnight for a "YYYY-MM-DD" calendar date. */
+export function startOfLocalDay(dateStr: string): Date {
+  const utcMidnight = Date.parse(`${dateStr}T00:00:00.000Z`)
+  return new Date(utcMidnight - SAO_PAULO_OFFSET_MS)
+}
+
+/** The "YYYY-MM-DD" local calendar date for a given instant. */
+export function localDateString(date: Date): string {
+  return new Date(date.getTime() + SAO_PAULO_OFFSET_MS).toISOString().slice(0, 10)
+}
+
+/** The "YYYY-MM" local calendar month for a given instant. */
+export function localMonthString(date: Date): string {
+  return new Date(date.getTime() + SAO_PAULO_OFFSET_MS).toISOString().slice(0, 7)
+}

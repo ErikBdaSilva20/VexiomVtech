@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 
 import { LEAD_STATUSES, type LeadStatus } from "@/lib/leads/lead-status"
 import type { ProspectingOverviewQuery } from "@/lib/leads/prospecting-overview-schema"
+import { localDateString, localMonthString, startOfLocalDay, MS_PER_DAY } from "@/lib/leads/sao-paulo-time"
 import type { Database } from "@/lib/supabase/database.types"
 
 const DEFAULT_PERIOD_MONTHS = 12
@@ -18,8 +19,14 @@ export type ProspectingOverview = {
   volumeByMonth: { month: string; count: number }[]
 }
 
+/**
+ * `from`/`to` are America/Sao_Paulo calendar dates (matching the business
+ * timezone convention set in `sao-paulo-time.ts` by 3.2/3.3) — using UTC
+ * dates here would shift "today" and month boundaries by up to 3 hours for
+ * admins viewing the panel from Brazil.
+ */
 function resolvePeriod(query: ProspectingOverviewQuery): { from: string; to: string } {
-  const to = query.to ?? new Date().toISOString().slice(0, 10)
+  const to = query.to ?? localDateString(new Date())
 
   if (query.from) {
     return { from: query.from, to }
@@ -52,8 +59,8 @@ export async function getProspectingOverview(
   const { data, error } = await supabase
     .from("leads")
     .select("status, project_type, created_at")
-    .gte("created_at", from)
-    .lt("created_at", `${to}T23:59:59.999Z`)
+    .gte("created_at", startOfLocalDay(from).toISOString())
+    .lt("created_at", new Date(startOfLocalDay(to).getTime() + MS_PER_DAY).toISOString())
 
   if (error) {
     console.error("getProspectingOverview: failed to load leads", error)
@@ -73,7 +80,7 @@ export async function getProspectingOverview(
 
     projectTypeDistribution[row.project_type] = (projectTypeDistribution[row.project_type] ?? 0) + 1
 
-    const month = row.created_at.slice(0, 7)
+    const month = localMonthString(new Date(row.created_at))
     volumeByMonthMap.set(month, (volumeByMonthMap.get(month) ?? 0) + 1)
   }
 

@@ -4,11 +4,11 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 
 import { businessHoursElapsed } from "@/lib/leads/business-hours"
 import { isTerminalLeadStatus, type LeadStatus } from "@/lib/leads/lead-status"
+import { MS_PER_DAY } from "@/lib/leads/sao-paulo-time"
 import type { Database } from "@/lib/supabase/database.types"
 
 const SLA_BUSINESS_HOURS_THRESHOLD = 12
 const COOLING_DAYS_THRESHOLD = 5
-const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 type RiskAlertRow = {
   id: string

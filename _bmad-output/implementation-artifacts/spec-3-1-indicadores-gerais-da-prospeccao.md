@@ -64,6 +64,7 @@ baseline_commit: '408df3a'
 - Aggregation is in-memory over a single filtered `select` — simplest correct approach; revisit only if lead volume ever makes this a real performance concern (no evidence of that today).
 - `z.iso.date({ error: "..." })` confirmed via a throwaway script (same category check as prior `z.uuid()`/`z.iso.datetime()` findings — this project's zod version takes the message via the options object, not a second positional argument).
 - `pnpm tsc --noEmit`, `pnpm lint`, `pnpm test` (174 tests) all pass.
+- **Post-hoc audit fix (2026-09-24, after 3.3 shipped):** period boundaries (`resolvePeriod`'s default "today", the `gte`/`lt` query bounds, and `volumeByMonth`'s month bucketing) originally used UTC dates instead of the America/Sao_Paulo local calendar day/month `sao-paulo-time.ts` established in 3.2/3.3. Fixed to use `localDateString`/`startOfLocalDay`/`localMonthString` — see `get-prospecting-overview.ts`. Regression tests added.
 - Not verified against a live Supabase instance — no CLI/DB access in this environment.
 
 ## Verification

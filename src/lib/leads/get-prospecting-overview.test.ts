@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { getProspectingOverview } from "./get-prospecting-overview"
+import { localDateString, startOfLocalDay, MS_PER_DAY } from "./sao-paulo-time"
 
 function mockClient(result: { data: unknown[] | null; error: unknown }) {
   const lt = vi.fn().mockResolvedValue(result)
@@ -18,10 +19,13 @@ describe("getProspectingOverview", () => {
 
     const result = await getProspectingOverview(supabase, {})
 
-    const today = new Date().toISOString().slice(0, 10)
+    const today = localDateString(new Date())
     expect(result.to).toBe(today)
-    expect(gte).toHaveBeenCalledWith("created_at", result.from)
-    expect(lt).toHaveBeenCalledWith("created_at", `${today}T23:59:59.999Z`)
+    expect(gte).toHaveBeenCalledWith("created_at", startOfLocalDay(result.from).toISOString())
+    expect(lt).toHaveBeenCalledWith(
+      "created_at",
+      new Date(startOfLocalDay(today).getTime() + MS_PER_DAY).toISOString()
+    )
   })
 
   it("uses the explicit from/to bounds when given", async () => {
@@ -57,6 +61,17 @@ describe("getProspectingOverview", () => {
       { month: "2026-01", count: 2 },
       { month: "2026-02", count: 2 },
     ])
+  })
+
+  it("buckets a lead by its local (America/Sao_Paulo) month, not its UTC month", async () => {
+    // 2026-01-31T23:30:00-03:00 = 2026-02-01T02:30:00Z — still January locally.
+    const rows = [{ status: "novo_lead", project_type: "landing_page", created_at: "2026-02-01T02:30:00Z" }]
+    const { from } = mockClient({ data: rows, error: null })
+    const supabase = { from } as never
+
+    const result = await getProspectingOverview(supabase, { from: "2026-01-01", to: "2026-02-28" })
+
+    expect(result.volumeByMonth).toEqual([{ month: "2026-01", count: 1 }])
   })
 
   it("returns a zeroed overview when there are no leads in the period", async () => {
