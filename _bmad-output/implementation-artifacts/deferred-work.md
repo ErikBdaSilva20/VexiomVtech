@@ -34,3 +34,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-4-listagem-de-leads-com-busca-e-filtros.md`
   summary: `%`/`_` typed by a user in the search box are escaped and matched literally, not treated as user-controlled wildcards.
   evidence: Deliberate safe default (also closes off a minor DoS vector from pathological wildcard patterns); no requirement asks for user-controlled SQL-style wildcards in the search box.
+- source_spec: `_bmad-output/implementation-artifacts/spec-5-1-cadastro-de-projetos-internos.md`
+  summary: Consider auto-clearing `projects.finished_at` when a `concluido` project's status is moved back to `em_andamento`/`cancelado`.
+  evidence: Blind Hunter review — currently the field is left stale (still shows the old completion date) after reopening a project; no AC requires this, and it's a debatable UX call (admin can already edit the field directly), so deferred rather than patched.
