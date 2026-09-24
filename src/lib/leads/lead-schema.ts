@@ -10,7 +10,7 @@ export const MAX_LONG_TEXT = 5000
 // taxonomy documented for project_type/budget_range/etc. at the DB level —
 // see supabase/setup.sql), so an empty string is normalized to `null`
 // instead of being stored as a meaningless blank value.
-function optionalText(maxLength: number) {
+export function optionalText(maxLength: number) {
   return z
     .string()
     .trim()

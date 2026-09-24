@@ -5,6 +5,14 @@ import { z } from "zod"
 import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
 import type { LeadStatus } from "@/lib/leads/lead-status"
 import { createLeadInteractionSchema } from "@/lib/leads/lead-interaction-schema"
+import {
+  updateLeadAssigneeSchema,
+  updateLeadNextActionSchema,
+  updateLeadNonConversionReasonSchema,
+  updateLeadProbabilitySchema,
+  updateLeadTagsSchema,
+} from "@/lib/leads/lead-qualification-schema"
+import { updateLeadFields } from "@/lib/leads/update-lead-fields"
 import { updateLeadStatusSchema } from "@/lib/leads/update-lead-status-schema"
 import { createClient } from "@/lib/supabase/server"
 
@@ -12,6 +20,15 @@ import { createClient } from "@/lib/supabase/server"
 // src/lib/auth/get-current-admin.ts, kept local here since it's a
 // PostgREST-wide code, not something specific to leads.
 const NO_ROWS_ERROR_CODE = "PGRST116"
+
+// A `FormData` field that's absent from the form entirely arrives as
+// `null` (the caller isn't touching that field); one that's present but
+// empty (e.g. a cleared input) arrives as `""`, which schemas here treat as
+// an explicit "clear this value" rather than a validation error.
+function nullableFormValue(formData: FormData, key: string): string | null {
+  const value = formData.get(key)
+  return typeof value === "string" && value.length > 0 ? value : null
+}
 
 export type CreateLeadInteractionState =
   | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
@@ -26,6 +43,32 @@ export type MarkLeadRespondedState =
 export type UpdateLeadStatusState =
   | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
   | { status: "conflict"; currentStatus: LeadStatus }
+  | { status: "success" }
+  | undefined
+
+export type UpdateLeadNextActionState =
+  | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
+  | { status: "success" }
+  | undefined
+
+export type UpdateLeadProbabilityState =
+  | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
+  | { status: "success" }
+  | undefined
+
+export type UpdateLeadTagsState =
+  | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
+  | { status: "success" }
+  | undefined
+
+export type UpdateLeadNonConversionReasonState =
+  | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
+  | { status: "success" }
+  | undefined
+
+export type UpdateLeadAssigneeState =
+  | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
+  | { status: "conflict"; currentAssignedTo: string | null }
   | { status: "success" }
   | undefined
 
@@ -48,13 +91,11 @@ export async function createLeadInteraction(
     return { status: "error", error: "Sessão expirada. Faça login novamente." }
   }
 
-  const rawOccurredAt = formData.get("occurred_at")
-
   const parsed = createLeadInteractionSchema.safeParse({
     lead_id: formData.get("lead_id"),
     type: formData.get("type"),
     content: formData.get("content"),
-    occurred_at: typeof rawOccurredAt === "string" && rawOccurredAt.length > 0 ? rawOccurredAt : null,
+    occurred_at: nullableFormValue(formData, "occurred_at"),
   })
 
   if (!parsed.success) {
@@ -219,5 +260,265 @@ export async function updateLeadStatus(
   } catch (error) {
     console.error("updateLeadStatus: unexpected failure", error)
     return { status: "error", error: "Não foi possível alterar o status. Tente novamente." }
+  }
+}
+
+/**
+ * Sets next_action + next_action_at together (FR14). Both are nullable so
+ * either can be explicitly cleared (empty string) without touching the
+ * other.
+ */
+export async function updateLeadNextAction(
+  _prevState: UpdateLeadNextActionState,
+  formData: FormData
+): Promise<UpdateLeadNextActionState> {
+  const admin = await getCurrentAdmin()
+
+  if (!admin) {
+    return { status: "error", error: "Sessão expirada. Faça login novamente." }
+  }
+
+  const parsed = updateLeadNextActionSchema.safeParse({
+    lead_id: formData.get("lead_id"),
+    next_action: nullableFormValue(formData, "next_action"),
+    next_action_at: nullableFormValue(formData, "next_action_at"),
+  })
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      error: "Dados inválidos.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    }
+  }
+
+  try {
+    const supabase = await createClient()
+    const result = await updateLeadFields(supabase, parsed.data.lead_id, {
+      next_action: parsed.data.next_action,
+      next_action_at: parsed.data.next_action_at,
+    })
+
+    if (!result.ok) {
+      console.error("updateLeadNextAction: failed to update lead", result.error)
+      return { status: "error", error: "Não foi possível salvar a próxima ação. Tente novamente." }
+    }
+
+    return { status: "success" }
+  } catch (error) {
+    console.error("updateLeadNextAction: unexpected failure", error)
+    return { status: "error", error: "Não foi possível salvar a próxima ação. Tente novamente." }
+  }
+}
+
+/** Sets the lead's closing probability (FR15). */
+export async function updateLeadProbability(
+  _prevState: UpdateLeadProbabilityState,
+  formData: FormData
+): Promise<UpdateLeadProbabilityState> {
+  const admin = await getCurrentAdmin()
+
+  if (!admin) {
+    return { status: "error", error: "Sessão expirada. Faça login novamente." }
+  }
+
+  const parsed = updateLeadProbabilitySchema.safeParse({
+    lead_id: formData.get("lead_id"),
+    probability: nullableFormValue(formData, "probability"),
+  })
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      error: "Dados inválidos.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    }
+  }
+
+  try {
+    const supabase = await createClient()
+    const result = await updateLeadFields(supabase, parsed.data.lead_id, {
+      probability: parsed.data.probability,
+    })
+
+    if (!result.ok) {
+      console.error("updateLeadProbability: failed to update lead", result.error)
+      return { status: "error", error: "Não foi possível salvar a probabilidade. Tente novamente." }
+    }
+
+    return { status: "success" }
+  } catch (error) {
+    console.error("updateLeadProbability: unexpected failure", error)
+    return { status: "error", error: "Não foi possível salvar a probabilidade. Tente novamente." }
+  }
+}
+
+/**
+ * Replaces a lead's full tag list (FR16). Full-array replace, not
+ * incremental add/remove — the caller sends the complete desired list.
+ */
+export async function updateLeadTags(
+  _prevState: UpdateLeadTagsState,
+  formData: FormData
+): Promise<UpdateLeadTagsState> {
+  const admin = await getCurrentAdmin()
+
+  if (!admin) {
+    return { status: "error", error: "Sessão expirada. Faça login novamente." }
+  }
+
+  const parsed = updateLeadTagsSchema.safeParse({
+    lead_id: formData.get("lead_id"),
+    tags: formData.getAll("tags"),
+  })
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      error: "Dados inválidos.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    }
+  }
+
+  try {
+    const supabase = await createClient()
+    const result = await updateLeadFields(supabase, parsed.data.lead_id, {
+      tags: parsed.data.tags,
+    })
+
+    if (!result.ok) {
+      console.error("updateLeadTags: failed to update lead", result.error)
+      return { status: "error", error: "Não foi possível salvar as tags. Tente novamente." }
+    }
+
+    return { status: "success" }
+  } catch (error) {
+    console.error("updateLeadTags: unexpected failure", error)
+    return { status: "error", error: "Não foi possível salvar as tags. Tente novamente." }
+  }
+}
+
+/**
+ * Sets the non-conversion reason (FR17). No backend rule requires
+ * `status === 'nao_convertido'` first — see `updateLeadNonConversionReasonSchema`'s
+ * doc comment for why that's deliberately left as a frontend concern.
+ */
+export async function updateLeadNonConversionReason(
+  _prevState: UpdateLeadNonConversionReasonState,
+  formData: FormData
+): Promise<UpdateLeadNonConversionReasonState> {
+  const admin = await getCurrentAdmin()
+
+  if (!admin) {
+    return { status: "error", error: "Sessão expirada. Faça login novamente." }
+  }
+
+  const parsed = updateLeadNonConversionReasonSchema.safeParse({
+    lead_id: formData.get("lead_id"),
+    non_conversion_reason: nullableFormValue(formData, "non_conversion_reason"),
+  })
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      error: "Dados inválidos.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    }
+  }
+
+  try {
+    const supabase = await createClient()
+    const result = await updateLeadFields(supabase, parsed.data.lead_id, {
+      non_conversion_reason: parsed.data.non_conversion_reason,
+    })
+
+    if (!result.ok) {
+      console.error("updateLeadNonConversionReason: failed to update lead", result.error)
+      return { status: "error", error: "Não foi possível salvar o motivo. Tente novamente." }
+    }
+
+    return { status: "success" }
+  } catch (error) {
+    console.error("updateLeadNonConversionReason: unexpected failure", error)
+    return { status: "error", error: "Não foi possível salvar o motivo. Tente novamente." }
+  }
+}
+
+/**
+ * Assigns a lead to an admin, or unassigns it (`assigned_to: null`) (FR18).
+ *
+ * Optimistic concurrency, same posture as `updateLeadStatus` (story 2.7):
+ * the caller sends `expected_assigned_to` (who/what it last saw as the
+ * owner) and the UPDATE is conditioned on it — two admins racing to claim
+ * the same unassigned lead is a real scenario, not a hypothetical, so the
+ * loser gets an explicit `conflict` (with who actually holds it now)
+ * instead of silently stealing the assignment back.
+ */
+export async function updateLeadAssignee(
+  _prevState: UpdateLeadAssigneeState,
+  formData: FormData
+): Promise<UpdateLeadAssigneeState> {
+  const admin = await getCurrentAdmin()
+
+  if (!admin) {
+    return { status: "error", error: "Sessão expirada. Faça login novamente." }
+  }
+
+  const parsed = updateLeadAssigneeSchema.safeParse({
+    lead_id: formData.get("lead_id"),
+    assigned_to: nullableFormValue(formData, "assigned_to"),
+    expected_assigned_to: nullableFormValue(formData, "expected_assigned_to"),
+  })
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      error: "Dados inválidos.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    }
+  }
+
+  try {
+    const supabase = await createClient()
+
+    let query = supabase
+      .from("leads")
+      .update({ assigned_to: parsed.data.assigned_to })
+      .eq("id", parsed.data.lead_id)
+
+    query =
+      parsed.data.expected_assigned_to === null
+        ? query.is("assigned_to", null)
+        : query.eq("assigned_to", parsed.data.expected_assigned_to)
+
+    const { data, error } = await query.select("id").single()
+
+    if (data) {
+      return { status: "success" }
+    }
+
+    if (error && error.code !== NO_ROWS_ERROR_CODE) {
+      console.error("updateLeadAssignee: failed to update lead", error)
+      return { status: "error", error: "Não foi possível salvar o responsável. Tente novamente." }
+    }
+
+    const { data: currentLead, error: currentLeadError } = await supabase
+      .from("leads")
+      .select("assigned_to")
+      .eq("id", parsed.data.lead_id)
+      .maybeSingle()
+
+    if (currentLeadError || !currentLead) {
+      console.error(
+        "updateLeadAssignee: lead not found after a conditional update matched 0 rows",
+        currentLeadError
+      )
+      return { status: "error", error: "Não foi possível salvar o responsável. Tente novamente." }
+    }
+
+    return { status: "conflict", currentAssignedTo: currentLead.assigned_to }
+  } catch (error) {
+    console.error("updateLeadAssignee: unexpected failure", error)
+    return { status: "error", error: "Não foi possível salvar o responsável. Tente novamente." }
   }
 }
