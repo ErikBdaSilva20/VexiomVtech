@@ -10,3 +10,12 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-tailwind-header-hero.md`
   summary: Migrate Header styling (site-header.tsx, primary-nav.tsx) from globals.css to Tailwind utility classes.
   evidence: Original spec covered Header + Hero together but exceeded the ~1600-token spec size guideline; split into two independently shippable deliverables. Hero goes first (contains the button the user specifically wants to resize); Header follows as its own spec once Hero migration is verified.
+- source_spec: none
+  summary: POST /api/leads (Zod validation, insert) and duplicate-lead detection (possible_duplicate_of) for the public contact form — Stories 2.1/2.2 backend.
+  evidence: Split from the Epic 1 build (foundation + auth) so it ships as its own independently reviewable PR. Uses the same migration/clients as Epic 1, just consumed by a different endpoint (public form intake vs admin auth).
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-epic-1-auth-fundacao-supabase.md`
+  summary: Add rate limiting/lockout on the admin login Server Action.
+  evidence: Blind Hunter review flagged no app-level rate limiting on `signInWithPassword`. Supabase Auth (GoTrue) applies its own server-side rate limiting by default, and this is a 2-user internal tool per doc 08, so the current exposure is low. Revisit if the admin user base grows or if Supabase's default throttling proves insufficient.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-epic-1-auth-fundacao-supabase.md`
+  summary: Decide `ON DELETE` referential-action policy (`CASCADE` vs `SET NULL` vs keep blocking `NO ACTION`) for the FKs referencing `admin_users`/`leads`/`projects` (`leads.assigned_to`, `leads.created_by`, `leads.possible_duplicate_of`, `lead_interactions.author_id`, `financial_transactions.partner_id`/`created_by`, `projects.lead_id`, `cases.project_id`).
+  evidence: Edge Case Hunter review flagged that all these FKs default to `NO ACTION`, so deleting a referenced `admin_users`/`leads`/`projects` row will fail with a Postgres FK violation. Doc 08 never specifies the intended behavior (e.g. should removing an admin null out their historical `created_by` attribution, or should that be blocked?), and no epic currently ships a delete flow for any of these entities, so there is no live trigger path yet. Needs a product decision, not a code guess.
