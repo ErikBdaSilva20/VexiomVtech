@@ -4,7 +4,8 @@ import { createProject } from "@/lib/projects/create-project"
 import { createProjectSchema, updateProjectSchema } from "@/lib/projects/project-schema"
 import { updateProject } from "@/lib/projects/update-project"
 import type { WriteProjectErrorKind } from "@/lib/projects/write-project-error"
-import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
+import { requireSuperAdmin } from "@/lib/auth/require-super-admin"
+import { textFormValue } from "@/lib/forms/text-form-value"
 import { createClient } from "@/lib/supabase/server"
 
 const ERROR_MESSAGES: Record<WriteProjectErrorKind, string> = {
@@ -12,25 +13,7 @@ const ERROR_MESSAGES: Record<WriteProjectErrorKind, string> = {
   unknown: "Não foi possível salvar o projeto.",
 }
 
-// A `FormData` field that's absent (not present as a key at all) arrives as
-// `null` — a plain <input> whose value is an empty string still arrives as
-// `""`, which schemas here validate normally (most project fields accept
-// blank as "not provided").
-function textFormValue(formData: FormData, key: string): string | undefined {
-  const value = formData.get(key)
-  return typeof value === "string" ? value : undefined
-}
-
-async function requireSuperAdmin() {
-  const admin = await getCurrentAdmin()
-  if (!admin) {
-    return { ok: false as const, error: "Sessão expirada. Faça login novamente." }
-  }
-  if (admin.role !== "super_admin") {
-    return { ok: false as const, error: "Apenas super_admin pode gerenciar projetos." }
-  }
-  return { ok: true as const, admin }
-}
+const ROLE_DENIED_MESSAGE = "Apenas super_admin pode gerenciar projetos."
 
 export type CreateProjectState =
   | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
@@ -41,7 +24,7 @@ export async function createProjectAction(
   _prevState: CreateProjectState,
   formData: FormData
 ): Promise<CreateProjectState> {
-  const auth = await requireSuperAdmin()
+  const auth = await requireSuperAdmin(ROLE_DENIED_MESSAGE)
   if (!auth.ok) return { status: "error", error: auth.error }
 
   const parsed = createProjectSchema.safeParse({
@@ -80,7 +63,7 @@ export async function updateProjectAction(
   _prevState: UpdateProjectState,
   formData: FormData
 ): Promise<UpdateProjectState> {
-  const auth = await requireSuperAdmin()
+  const auth = await requireSuperAdmin(ROLE_DENIED_MESSAGE)
   if (!auth.ok) return { status: "error", error: auth.error }
 
   const parsed = updateProjectSchema.safeParse({

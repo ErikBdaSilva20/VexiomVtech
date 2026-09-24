@@ -6,7 +6,8 @@ import { uploadCaseImage } from "@/lib/cases/case-image-upload"
 import { appendCaseGalleryImages, setCaseCoverImage } from "@/lib/cases/set-case-images"
 import { updateCase } from "@/lib/cases/update-case"
 import type { WriteCaseErrorKind } from "@/lib/cases/write-case-error"
-import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
+import { requireSuperAdmin } from "@/lib/auth/require-super-admin"
+import { textFormValue } from "@/lib/forms/text-form-value"
 import { createClient } from "@/lib/supabase/server"
 import type { SupabaseClient } from "@supabase/supabase-js"
 import type { Database } from "@/lib/supabase/database.types"
@@ -17,13 +18,7 @@ const ERROR_MESSAGES: Record<WriteCaseErrorKind, string> = {
   unknown: "Não foi possível salvar o case.",
 }
 
-// A `FormData` field that's absent (not present as a key at all) arrives as
-// `null` — a plain <input> whose value is an empty string still arrives as
-// `""`, which schemas here validate normally (most case fields are required).
-function textFormValue(formData: FormData, key: string): string | undefined {
-  const value = formData.get(key)
-  return typeof value === "string" ? value : undefined
-}
+const ROLE_DENIED_MESSAGE = "Apenas super_admin pode gerenciar cases."
 
 // Unchecked checkboxes are omitted from FormData entirely — only a checked
 // box sends a value (the form uses `"on"` implicitly via the browser default).
@@ -77,17 +72,6 @@ async function applyCaseImages(
   return Object.keys(fieldErrors).length > 0 ? fieldErrors : undefined
 }
 
-async function requireSuperAdmin() {
-  const admin = await getCurrentAdmin()
-  if (!admin) {
-    return { ok: false as const, error: "Sessão expirada. Faça login novamente." }
-  }
-  if (admin.role !== "super_admin") {
-    return { ok: false as const, error: "Apenas super_admin pode gerenciar cases." }
-  }
-  return { ok: true as const, admin }
-}
-
 export type CreateCaseState =
   | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
   | { status: "success"; id: string; imageErrors?: Record<string, string[]> }
@@ -97,7 +81,7 @@ export async function createCaseAction(
   _prevState: CreateCaseState,
   formData: FormData
 ): Promise<CreateCaseState> {
-  const auth = await requireSuperAdmin()
+  const auth = await requireSuperAdmin(ROLE_DENIED_MESSAGE)
   if (!auth.ok) return { status: "error", error: auth.error }
 
   const parsed = createCaseSchema.safeParse({
@@ -144,7 +128,7 @@ export async function updateCaseAction(
   _prevState: UpdateCaseState,
   formData: FormData
 ): Promise<UpdateCaseState> {
-  const auth = await requireSuperAdmin()
+  const auth = await requireSuperAdmin(ROLE_DENIED_MESSAGE)
   if (!auth.ok) return { status: "error", error: auth.error }
 
   const parsed = updateCaseSchema.safeParse({
