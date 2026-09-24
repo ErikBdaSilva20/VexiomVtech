@@ -7,7 +7,7 @@
 // change the schema, add a new numbered file under supabase/migrations/ and
 // re-run this script.
 
-import { readdirSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -15,6 +15,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const repoRoot = join(__dirname, "..")
 const migrationsDir = join(repoRoot, "supabase", "migrations")
 const outputFile = join(repoRoot, "supabase", "migrations.sql")
+
+if (!existsSync(migrationsDir)) {
+  console.error(`No .sql files found in ${migrationsDir}`)
+  process.exit(1)
+}
 
 const migrationFiles = readdirSync(migrationsDir)
   .filter((file) => file.endsWith(".sql"))

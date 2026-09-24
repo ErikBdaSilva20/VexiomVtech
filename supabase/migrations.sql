@@ -18,6 +18,10 @@
 -- described in the Epic 1 spec). This file and migration 0001 are kept in
 -- sync by hand for the initial schema only.
 --
+-- Idempotent: safe to re-run against a project where it (or part of it) has
+-- already been applied — every statement either uses IF NOT EXISTS/OR
+-- REPLACE, or drops-then-recreates the object it defines.
+--
 -- Source of truth: docs/plans/08-integracao-supabase-e-area-administrativa.md
 -- (schema: lines 23-163; RLS: lines 151-164).
 
@@ -35,7 +39,7 @@ create extension if not exists pgcrypto;
 -- the source of truth for permissions inside the app — Supabase Auth alone
 -- has no concept of role. super_admin and employer rows are created manually
 -- via SQL/dashboard by the two founders; there is no public sign-up screen.
-create table public.admin_users (
+create table if not exists public.admin_users (
   user_id uuid primary key references auth.users (id) on delete cascade,
   role text not null check (role in ('super_admin', 'employer')),
   name text,
@@ -46,7 +50,7 @@ create table public.admin_users (
 -- manual pelo admin. project_type/status/source são taxonomias fechadas na
 -- documentação de produto (docs 05/06), mas sem CHECK rígido no banco —
 -- doc 08 só marca CHECK explícito nos campos abaixo listados.
-create table public.leads (
+create table if not exists public.leads (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
   name text not null,
@@ -76,7 +80,7 @@ create table public.leads (
 
 -- lead_interactions: linha do tempo única por lead (mensagens, notas,
 -- mudanças de status). Substitui uma tabela lead_notes separada.
-create table public.lead_interactions (
+create table if not exists public.lead_interactions (
   id uuid primary key default gen_random_uuid(),
   lead_id uuid not null references public.leads (id) on delete cascade,
   author_id uuid references public.admin_users (user_id),
@@ -88,7 +92,7 @@ create table public.lead_interactions (
 );
 
 -- lead_meetings: um lead pode ter mais de uma reunião ao longo da negociação.
-create table public.lead_meetings (
+create table if not exists public.lead_meetings (
   id uuid primary key default gen_random_uuid(),
   lead_id uuid not null references public.leads (id) on delete cascade,
   scheduled_at timestamptz not null,
@@ -101,7 +105,7 @@ create table public.lead_meetings (
 
 -- projects: qualquer trabalho contratado, publicado como case ou não.
 -- Existe pra que o financeiro rastreie lucro por projeto mesmo sem case.
-create table public.projects (
+create table if not exists public.projects (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   client_name text,
@@ -115,7 +119,7 @@ create table public.projects (
 );
 
 -- cases: portfólio público dinâmico. Campos definidos pelo negócio.
-create table public.cases (
+create table if not exists public.cases (
   id uuid primary key default gen_random_uuid(),
   slug text unique not null,
   title text not null,
@@ -139,7 +143,7 @@ create table public.cases (
 -- financial_transactions: livro-caixa único da Vexiom. partner_id preenchido
 -- = lançamento financiado pessoalmente por um sócio (aporte/investimento);
 -- vazio = movimento normal do caixa da empresa.
-create table public.financial_transactions (
+create table if not exists public.financial_transactions (
   id uuid primary key default gen_random_uuid(),
   direction text not null check (direction in ('entrada', 'saida')),
   category text not null,
@@ -196,7 +200,7 @@ begin
 end;
 $$;
 
-create trigger trg_leads_log_status_change
+create or replace trigger trg_leads_log_status_change
   after update on public.leads
   for each row
   when (old.status is distinct from new.status)
@@ -219,13 +223,17 @@ begin
 end;
 $$;
 
-create trigger trg_lead_interactions_set_last_interaction_at
+create or replace trigger trg_lead_interactions_set_last_interaction_at
   after insert on public.lead_interactions
   for each row
   execute function public.set_lead_last_interaction_at();
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security ("Segurança (RLS)", doc 08 lines 151-164)
+--
+-- Postgres has no CREATE POLICY IF NOT EXISTS / OR REPLACE, so each policy is
+-- dropped (if present) immediately before being recreated, keeping the whole
+-- file idempotent.
 -- ---------------------------------------------------------------------------
 
 -- admin_users: RLS habilitado; cada usuário só lê a própria linha. Suficiente
@@ -234,6 +242,7 @@ create trigger trg_lead_interactions_set_last_interaction_at
 -- founders via SQL/dashboard (role postgres/service role, que ignora RLS).
 alter table public.admin_users enable row level security;
 
+drop policy if exists "admin_users_select_own" on public.admin_users;
 create policy "admin_users_select_own"
   on public.admin_users for select
   using (auth.uid() = user_id);
@@ -244,14 +253,17 @@ create policy "admin_users_select_own"
 -- super_admin.
 alter table public.leads enable row level security;
 
+drop policy if exists "leads_select_admins" on public.leads;
 create policy "leads_select_admins"
   on public.leads for select
   using (app_current_role() in ('super_admin', 'employer'));
 
+drop policy if exists "leads_update_admins" on public.leads;
 create policy "leads_update_admins"
   on public.leads for update
   using (app_current_role() in ('super_admin', 'employer'));
 
+drop policy if exists "leads_delete_super_admin" on public.leads;
 create policy "leads_delete_super_admin"
   on public.leads for delete
   using (app_current_role() = 'super_admin');
@@ -260,36 +272,44 @@ create policy "leads_delete_super_admin"
 -- select/insert/update; delete só super_admin.
 alter table public.lead_interactions enable row level security;
 
+drop policy if exists "lead_interactions_select_admins" on public.lead_interactions;
 create policy "lead_interactions_select_admins"
   on public.lead_interactions for select
   using (app_current_role() in ('super_admin', 'employer'));
 
+drop policy if exists "lead_interactions_insert_admins" on public.lead_interactions;
 create policy "lead_interactions_insert_admins"
   on public.lead_interactions for insert
   with check (app_current_role() in ('super_admin', 'employer'));
 
+drop policy if exists "lead_interactions_update_admins" on public.lead_interactions;
 create policy "lead_interactions_update_admins"
   on public.lead_interactions for update
   using (app_current_role() in ('super_admin', 'employer'));
 
+drop policy if exists "lead_interactions_delete_super_admin" on public.lead_interactions;
 create policy "lead_interactions_delete_super_admin"
   on public.lead_interactions for delete
   using (app_current_role() = 'super_admin');
 
 alter table public.lead_meetings enable row level security;
 
+drop policy if exists "lead_meetings_select_admins" on public.lead_meetings;
 create policy "lead_meetings_select_admins"
   on public.lead_meetings for select
   using (app_current_role() in ('super_admin', 'employer'));
 
+drop policy if exists "lead_meetings_insert_admins" on public.lead_meetings;
 create policy "lead_meetings_insert_admins"
   on public.lead_meetings for insert
   with check (app_current_role() in ('super_admin', 'employer'));
 
+drop policy if exists "lead_meetings_update_admins" on public.lead_meetings;
 create policy "lead_meetings_update_admins"
   on public.lead_meetings for update
   using (app_current_role() in ('super_admin', 'employer'));
 
+drop policy if exists "lead_meetings_delete_super_admin" on public.lead_meetings;
 create policy "lead_meetings_delete_super_admin"
   on public.lead_meetings for delete
   using (app_current_role() = 'super_admin');
@@ -299,18 +319,22 @@ create policy "lead_meetings_delete_super_admin"
 -- insert/update/delete só super_admin.
 alter table public.cases enable row level security;
 
+drop policy if exists "cases_select_published_or_super_admin" on public.cases;
 create policy "cases_select_published_or_super_admin"
   on public.cases for select
   using (published = true or app_current_role() = 'super_admin');
 
+drop policy if exists "cases_insert_super_admin" on public.cases;
 create policy "cases_insert_super_admin"
   on public.cases for insert
   with check (app_current_role() = 'super_admin');
 
+drop policy if exists "cases_update_super_admin" on public.cases;
 create policy "cases_update_super_admin"
   on public.cases for update
   using (app_current_role() = 'super_admin');
 
+drop policy if exists "cases_delete_super_admin" on public.cases;
 create policy "cases_delete_super_admin"
   on public.cases for delete
   using (app_current_role() = 'super_admin');
@@ -319,6 +343,7 @@ create policy "cases_delete_super_admin"
 -- employer não enxerga nada dessas tabelas, nem em modo leitura.
 alter table public.projects enable row level security;
 
+drop policy if exists "projects_all_super_admin" on public.projects;
 create policy "projects_all_super_admin"
   on public.projects for all
   using (app_current_role() = 'super_admin')
@@ -326,6 +351,7 @@ create policy "projects_all_super_admin"
 
 alter table public.financial_transactions enable row level security;
 
+drop policy if exists "financial_transactions_all_super_admin" on public.financial_transactions;
 create policy "financial_transactions_all_super_admin"
   on public.financial_transactions for all
   using (app_current_role() = 'super_admin')
@@ -340,18 +366,22 @@ insert into storage.buckets (id, name, public)
 values ('case-images', 'case-images', true)
 on conflict (id) do nothing;
 
+drop policy if exists "case_images_public_read" on storage.objects;
 create policy "case_images_public_read"
   on storage.objects for select
   using (bucket_id = 'case-images');
 
+drop policy if exists "case_images_super_admin_write" on storage.objects;
 create policy "case_images_super_admin_write"
   on storage.objects for insert
   with check (bucket_id = 'case-images' and app_current_role() = 'super_admin');
 
+drop policy if exists "case_images_super_admin_update" on storage.objects;
 create policy "case_images_super_admin_update"
   on storage.objects for update
   using (bucket_id = 'case-images' and app_current_role() = 'super_admin');
 
+drop policy if exists "case_images_super_admin_delete" on storage.objects;
 create policy "case_images_super_admin_delete"
   on storage.objects for delete
   using (bucket_id = 'case-images' and app_current_role() = 'super_admin');

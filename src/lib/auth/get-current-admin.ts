@@ -11,6 +11,10 @@ export type CurrentAdmin = {
   name: string | null
 }
 
+// Supabase's "no rows found" error code for `.single()` — expected when a
+// Supabase Auth user has no matching `admin_users` row, not a real failure.
+const NO_ROWS_ERROR_CODE = "PGRST116"
+
 /**
  * Single place every layer trusts for "who is this admin". Reads the
  * Supabase Auth session, then joins `admin_users` to resolve the app-level
@@ -35,11 +39,15 @@ export const getCurrentAdmin = cache(async (): Promise<CurrentAdmin | null> => {
     return null
   }
 
-  const { data: adminUser } = await supabase
+  const { data: adminUser, error: adminUserError } = await supabase
     .from("admin_users")
     .select("role, name")
     .eq("user_id", user.id)
     .single()
+
+  if (adminUserError && adminUserError.code !== NO_ROWS_ERROR_CODE) {
+    console.error("getCurrentAdmin: failed to look up admin_users row", adminUserError)
+  }
 
   if (!adminUser) {
     return null

@@ -1,7 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env"
 import type { AdminRole } from "@/lib/supabase/database.types"
+
+// Supabase's "no rows found" error code for `.single()` — expected when a
+// Supabase Auth user has no matching `admin_users` row, not a real failure.
+const NO_ROWS_ERROR_CODE = "PGRST116"
 
 const LOGIN_PATH = "/painel-8f2k/login"
 const DEFAULT_AUTHENTICATED_PATH = "/painel-8f2k/leads"
@@ -34,8 +39,8 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    getSupabaseUrl(),
+    getSupabaseAnonKey(),
     {
       cookies: {
         getAll() {
@@ -43,6 +48,11 @@ export async function proxy(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          // Rebuild `response` from the mutated `request` (not just mutate
+          // cookies on the existing response) so the refreshed cookies ride
+          // on a response that also carries the updated request headers —
+          // without this reassignment, refreshed session cookies silently
+          // fail to propagate to the browser.
           response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
@@ -59,11 +69,15 @@ export async function proxy(request: NextRequest) {
   if (pathname === LOGIN_PATH) {
     // Already authenticated and admin? Skip the login form.
     if (user) {
-      const { data: adminUser } = await supabase
+      const { data: adminUser, error: adminUserError } = await supabase
         .from("admin_users")
         .select("role")
         .eq("user_id", user.id)
         .single()
+
+      if (adminUserError && adminUserError.code !== NO_ROWS_ERROR_CODE) {
+        console.error("proxy: failed to look up admin_users row", adminUserError)
+      }
 
       if (adminUser) {
         return NextResponse.redirect(new URL(DEFAULT_AUTHENTICATED_PATH, request.url))
@@ -76,14 +90,19 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(LOGIN_PATH, request.url))
   }
 
-  const { data: adminUser } = await supabase
+  const { data: adminUser, error: adminUserError } = await supabase
     .from("admin_users")
     .select("role")
     .eq("user_id", user.id)
     .single()
 
+  if (adminUserError && adminUserError.code !== NO_ROWS_ERROR_CODE) {
+    console.error("proxy: failed to look up admin_users row", adminUserError)
+  }
+
   if (!adminUser) {
-    // Authenticated in Supabase Auth, but no admin_users row: unauthorized.
+    // Authenticated in Supabase Auth, but no admin_users row (or the lookup
+    // failed above): unauthorized either way, fail closed.
     return NextResponse.redirect(new URL(LOGIN_PATH, request.url))
   }
 

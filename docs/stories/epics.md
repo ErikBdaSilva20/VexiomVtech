@@ -61,7 +61,7 @@ NFR1: Toda rota administrativa (`/painel-8f2k/*`) deve exigir sessão autenticad
 NFR2: O papel `employer` não deve ter acesso, nem em modo leitura, aos dados de `cases`, `projects` e `financial_transactions`.
 NFR3: A escrita pública de leads não deve depender de política de RLS de insert anônimo; deve ocorrer via Route Handler de servidor usando a service role key, nunca exposta ao navegador.
 NFR4: Todo payload recebido do formulário público deve ser validado com Zod antes de qualquer gravação no banco.
-NFR5: As políticas de RLS de `admin_users`, `leads`, `lead_interactions`, `lead_meetings`, `cases`, `projects` e `financial_transactions` devem ser aplicadas via função `current_role()` (`SECURITY DEFINER`), evitando recursão de RLS.
+NFR5: As políticas de RLS de `admin_users`, `leads`, `lead_interactions`, `lead_meetings`, `cases`, `projects` e `financial_transactions` devem ser aplicadas via função `app_current_role()` (`SECURITY DEFINER`), evitando recursão de RLS.
 NFR6: O bucket de imagens de cases no Supabase Storage deve permitir leitura pública, mas restringir escrita a usuários autenticados com papel `super_admin`.
 NFR7: O cálculo de "lead esfriando" e do painel de saúde da prospecção não deve exigir agregações custosas (`MAX`) sobre a tabela de interações a cada carregamento — o campo `last_interaction_at` deve ser mantido via trigger de banco.
 NFR8: Antes de implementar qualquer gráfico (painel de leads ou dashboard financeiro), a skill `dataviz` do projeto deve ser consultada para paleta, acessibilidade e forma dos componentes.
@@ -151,9 +151,13 @@ Visão consolidada sobre o funil: contagem por status, alerta de SLA estourado, 
 
 ## Epic 1: Autenticação e Acesso Administrativo
 
+**Status:** implementado, em verificação manual. Migration (`supabase/setup.sql`, idempotente), clients Supabase, `proxy.ts`, login e stub de `/painel-8f2k/leads` construídos e revisados (`_bmad-output/implementation-artifacts/spec-1-epic-1-auth-fundacao-supabase.md`). Testado manualmente contra projeto Supabase real: fluxo de login/redirect/negação de acesso funciona; investigando um bug em aberto de sessão não persistindo a um refresh de página (cookie é setado na resposta do login mas não sobrevive a um F5).
+
 Administradores conseguem logar via Supabase Auth e o sistema reconhece os dois papéis (`super_admin`/`employer`), protegendo toda rota `/painel-8f2k/*` conforme a permissão de cada um.
 
 ### Story 1.1: Login administrativo com reconhecimento de papel
+
+**Status:** implementado (`src/app/painel-8f2k/login/`). AC1 (login válido) e AC2 (credenciais inválidas) confirmados manualmente; AC3 (usuário sem `admin_users`) implementado em `get-current-admin.ts`/`proxy.ts`, não testado manualmente ainda.
 
 As an administrador (`super_admin` ou `employer`),
 I want fazer login com e-mail e senha em `/painel-8f2k/login` e ter meu papel reconhecido pelo sistema,
@@ -174,6 +178,8 @@ So that eu acesso a área administrativa com as permissões corretas pro meu pap
 **Then** o acesso é negado (tratado como sem papel/não autorizado), mesmo com sessão válida no Supabase Auth
 
 ### Story 1.2: Proteção de rotas administrativas por sessão e papel
+
+**Status:** implementado (`src/proxy.ts`). AC1 (sem sessão → login) confirmado manualmente. AC2 (papel `employer` em rota restrita a `super_admin`) não é testável ainda — nenhuma rota restrita existe até o Epic 4/5 (`ROLE_RESTRICTED_PREFIXES` está vazio de propósito). AC3 (`super_admin` acessa tudo) confirmado manualmente.
 
 As the sistema,
 I want proteger toda rota sob `/painel-8f2k/*` via middleware, verificando sessão e papel,

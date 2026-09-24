@@ -15,8 +15,15 @@ export type LoginState = { error: string } | undefined
  * "unauthorized" outcome is enforced in exactly one place.
  */
 export async function login(_prevState: LoginState, formData: FormData): Promise<LoginState> {
-  const email = String(formData.get("email") ?? "").trim()
-  const password = String(formData.get("password") ?? "")
+  const rawEmail = formData.get("email")
+  const rawPassword = formData.get("password")
+
+  if (typeof rawEmail !== "string" || typeof rawPassword !== "string") {
+    return { error: "Informe e-mail e senha." }
+  }
+
+  const email = rawEmail.trim()
+  const password = rawPassword
 
   if (!email || !password) {
     return { error: "Informe e-mail e senha." }
