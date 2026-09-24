@@ -22,3 +22,18 @@ export const LEAD_STATUSES = [
 export type LeadStatus = (typeof LEAD_STATUSES)[number]
 
 export const leadStatusSchema = z.enum(LEAD_STATUSES)
+
+/**
+ * Statuses that mean the lead is no longer being actively worked (FR13/FR20).
+ * Leads in these statuses are excluded from risk alerts (3.2) — a lead
+ * that already closed, was lost, or moved to support isn't "at risk".
+ */
+export const TERMINAL_LEAD_STATUSES = [
+  "contrato_fechado",
+  "nao_convertido",
+  "em_suporte_continuo",
+] as const satisfies readonly LeadStatus[]
+
+export function isTerminalLeadStatus(status: LeadStatus): boolean {
+  return (TERMINAL_LEAD_STATUSES as readonly LeadStatus[]).includes(status)
+}
