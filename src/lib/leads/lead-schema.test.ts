@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { publicLeadSchema } from "./lead-schema"
+import { manualLeadSchema, publicLeadSchema } from "./lead-schema"
 
 const validPayload = {
   name: "Erik",
@@ -70,6 +70,32 @@ describe("publicLeadSchema", () => {
 
   it("rejects a field longer than the max length", () => {
     const result = publicLeadSchema.safeParse({ ...validPayload, name: "a".repeat(201) })
+
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("manualLeadSchema", () => {
+  it("accepts a valid payload with source", () => {
+    const result = manualLeadSchema.safeParse({ ...validPayload, source: "indicação" })
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.source).toBe("indicação")
+    }
+  })
+
+  it("rejects a payload missing source", () => {
+    const result = manualLeadSchema.safeParse(validPayload)
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.source).toBeTruthy()
+    }
+  })
+
+  it("rejects an empty source", () => {
+    const result = manualLeadSchema.safeParse({ ...validPayload, source: "" })
 
     expect(result.success).toBe(false)
   })

@@ -44,3 +44,14 @@ export const publicLeadSchema = z.object({
 })
 
 export type PublicLeadInput = z.infer<typeof publicLeadSchema>
+
+/**
+ * Used by the admin manual-entry Server Action (story 2.3) — same required
+ * fields as the public form, plus a required `source` describing where the
+ * lead actually came from (referral, event, Instagram, etc.).
+ */
+export const manualLeadSchema = publicLeadSchema.extend({
+  source: z.string().trim().min(1, "Origem é obrigatória.").max(MAX_SHORT_TEXT),
+})
+
+export type ManualLeadInput = z.infer<typeof manualLeadSchema>
