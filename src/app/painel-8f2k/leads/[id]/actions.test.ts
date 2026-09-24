@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
 import { createClient } from "@/lib/supabase/server"
-import { createLeadInteraction, markLeadResponded } from "./actions"
+import { createLeadInteraction, markLeadResponded, updateLeadStatus } from "./actions"
 
 vi.mock("@/lib/auth/get-current-admin", () => ({
   getCurrentAdmin: vi.fn(),
@@ -250,5 +250,148 @@ describe("markLeadResponded", () => {
       status: "error",
       error: "Não foi possível marcar o lead como respondido. Tente novamente.",
     })
+  })
+})
+
+const NO_ROWS_ERROR = { code: "PGRST116", message: "no rows" }
+
+function statusFormData(payload: { lead_id: string; status: string; expected_status: string }) {
+  const formData = new FormData()
+  formData.set("lead_id", payload.lead_id)
+  formData.set("status", payload.status)
+  formData.set("expected_status", payload.expected_status)
+  return formData
+}
+
+function mockStatusClient({
+  updateResult,
+  selectResult,
+}: {
+  updateResult: { data: { id: string } | null; error: unknown }
+  selectResult?: { data: { status: string } | null; error: unknown }
+}) {
+  const updateSingle = vi.fn().mockResolvedValue(updateResult)
+  const updateSelect = vi.fn().mockReturnValue({ single: updateSingle })
+  const updateEqStatus = vi.fn().mockReturnValue({ select: updateSelect })
+  const updateEqId = vi.fn().mockReturnValue({ eq: updateEqStatus })
+  const update = vi.fn().mockReturnValue({ eq: updateEqId })
+
+  const selectMaybeSingle = vi.fn().mockResolvedValue(selectResult ?? { data: null, error: null })
+  const selectEq = vi.fn().mockReturnValue({ maybeSingle: selectMaybeSingle })
+  const select = vi.fn().mockReturnValue({ eq: selectEq })
+
+  const from = vi.fn().mockReturnValue({ update, select })
+
+  vi.mocked(createClient).mockResolvedValue({ from } as never)
+
+  return { from, update, updateEqId, updateEqStatus, select, selectEq }
+}
+
+const validLeadId = "11111111-1111-4111-8111-111111111111"
+
+describe("updateLeadStatus", () => {
+  beforeEach(() => {
+    vi.mocked(getCurrentAdmin).mockReset()
+    vi.mocked(createClient).mockReset()
+  })
+
+  it("returns an error and does not touch the DB when unauthenticated", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue(null)
+
+    const result = await updateLeadStatus(
+      undefined,
+      statusFormData({ lead_id: validLeadId, status: "em_analise", expected_status: "novo_lead" })
+    )
+
+    expect(result).toEqual({ status: "error", error: expect.any(String) })
+    expect(createClient).not.toHaveBeenCalled()
+  })
+
+  it("returns a field-level error for a status outside the enum", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+
+    const result = await updateLeadStatus(
+      undefined,
+      statusFormData({ lead_id: validLeadId, status: "inventado", expected_status: "novo_lead" })
+    )
+
+    expect(result?.status).toBe("error")
+    if (result?.status === "error") {
+      expect(result.fieldErrors?.status).toBeTruthy()
+    }
+    expect(createClient).not.toHaveBeenCalled()
+  })
+
+  it("updates the status when expected_status matches the DB (conditional update wins)", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    const { update, updateEqId, updateEqStatus } = mockStatusClient({
+      updateResult: { data: { id: validLeadId }, error: null },
+    })
+
+    const result = await updateLeadStatus(
+      undefined,
+      statusFormData({ lead_id: validLeadId, status: "em_analise", expected_status: "novo_lead" })
+    )
+
+    expect(result).toEqual({ status: "success" })
+    expect(update).toHaveBeenCalledWith({ status: "em_analise" })
+    expect(updateEqId).toHaveBeenCalledWith("id", validLeadId)
+    expect(updateEqStatus).toHaveBeenCalledWith("status", "novo_lead")
+  })
+
+  it("reports a conflict (not a silent overwrite) when another admin already changed the status", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    mockStatusClient({
+      updateResult: { data: null, error: NO_ROWS_ERROR },
+      selectResult: { data: { status: "proposta_enviada" }, error: null },
+    })
+
+    const result = await updateLeadStatus(
+      undefined,
+      statusFormData({ lead_id: validLeadId, status: "em_analise", expected_status: "novo_lead" })
+    )
+
+    expect(result).toEqual({ status: "conflict", currentStatus: "proposta_enviada" })
+  })
+
+  it("returns a generic error when the lead doesn't exist at all", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    mockStatusClient({
+      updateResult: { data: null, error: NO_ROWS_ERROR },
+      selectResult: { data: null, error: null },
+    })
+
+    const result = await updateLeadStatus(
+      undefined,
+      statusFormData({ lead_id: validLeadId, status: "em_analise", expected_status: "novo_lead" })
+    )
+
+    expect(result).toEqual({ status: "error", error: "Não foi possível alterar o status. Tente novamente." })
+  })
+
+  it("returns a generic error on a real DB failure during the update (not a conflict)", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    mockStatusClient({
+      updateResult: { data: null, error: { code: "42501", message: "RLS denied" } },
+    })
+
+    const result = await updateLeadStatus(
+      undefined,
+      statusFormData({ lead_id: validLeadId, status: "em_analise", expected_status: "novo_lead" })
+    )
+
+    expect(result).toEqual({ status: "error", error: "Não foi possível alterar o status. Tente novamente." })
+  })
+
+  it("never inserts into lead_interactions itself — the DB trigger owns that", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    const { from } = mockStatusClient({ updateResult: { data: { id: validLeadId }, error: null } })
+
+    await updateLeadStatus(
+      undefined,
+      statusFormData({ lead_id: validLeadId, status: "em_analise", expected_status: "novo_lead" })
+    )
+
+    expect(from).not.toHaveBeenCalledWith("lead_interactions")
   })
 })

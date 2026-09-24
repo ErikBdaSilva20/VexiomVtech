@@ -3,8 +3,15 @@
 import { z } from "zod"
 
 import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
+import type { LeadStatus } from "@/lib/leads/lead-status"
 import { createLeadInteractionSchema } from "@/lib/leads/lead-interaction-schema"
+import { updateLeadStatusSchema } from "@/lib/leads/update-lead-status-schema"
 import { createClient } from "@/lib/supabase/server"
+
+// Supabase's "no rows found" error code for `.single()` — same constant as
+// src/lib/auth/get-current-admin.ts, kept local here since it's a
+// PostgREST-wide code, not something specific to leads.
+const NO_ROWS_ERROR_CODE = "PGRST116"
 
 export type CreateLeadInteractionState =
   | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
@@ -13,6 +20,12 @@ export type CreateLeadInteractionState =
 
 export type MarkLeadRespondedState =
   | { status: "error"; error: string }
+  | { status: "success" }
+  | undefined
+
+export type UpdateLeadStatusState =
+  | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
+  | { status: "conflict"; currentStatus: LeadStatus }
   | { status: "success" }
   | undefined
 
@@ -124,5 +137,87 @@ export async function markLeadResponded(
   } catch (error) {
     console.error("markLeadResponded: unexpected failure", error)
     return { status: "error", error: "Não foi possível marcar o lead como respondido. Tente novamente." }
+  }
+}
+
+/**
+ * Changes a lead's commercial status (FR12). The DB trigger
+ * `trg_leads_log_status_change` (supabase/setup.sql) automatically appends
+ * the `mudanca_status` timeline entry (FR13) — this action must never
+ * insert one itself, or every status change would be logged twice.
+ *
+ * Optimistic concurrency: the caller must send `expected_status` (the
+ * status it last displayed for this lead). The UPDATE is conditioned on
+ * the DB still holding that value; if another admin changed the status in
+ * the meantime, this matches 0 rows and the action reports a `conflict`
+ * with the lead's actual current status instead of silently overwriting
+ * the other admin's change.
+ */
+export async function updateLeadStatus(
+  _prevState: UpdateLeadStatusState,
+  formData: FormData
+): Promise<UpdateLeadStatusState> {
+  const admin = await getCurrentAdmin()
+
+  if (!admin) {
+    return { status: "error", error: "Sessão expirada. Faça login novamente." }
+  }
+
+  const parsed = updateLeadStatusSchema.safeParse({
+    lead_id: formData.get("lead_id"),
+    status: formData.get("status"),
+    expected_status: formData.get("expected_status"),
+  })
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      error: "Dados inválidos.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    }
+  }
+
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from("leads")
+      .update({ status: parsed.data.status })
+      .eq("id", parsed.data.lead_id)
+      .eq("status", parsed.data.expected_status)
+      .select("id")
+      .single()
+
+    if (data) {
+      return { status: "success" }
+    }
+
+    if (error && error.code !== NO_ROWS_ERROR_CODE) {
+      console.error("updateLeadStatus: failed to update lead", error)
+      return { status: "error", error: "Não foi possível alterar o status. Tente novamente." }
+    }
+
+    // 0 rows matched: either the lead doesn't exist, or its status no
+    // longer matches expected_status (someone else changed it first).
+    // Re-read to tell those two cases apart and give the caller a status
+    // it can act on instead of a generic failure.
+    const { data: currentLead, error: currentLeadError } = await supabase
+      .from("leads")
+      .select("status")
+      .eq("id", parsed.data.lead_id)
+      .maybeSingle()
+
+    if (currentLeadError || !currentLead) {
+      console.error(
+        "updateLeadStatus: lead not found after a conditional update matched 0 rows",
+        currentLeadError
+      )
+      return { status: "error", error: "Não foi possível alterar o status. Tente novamente." }
+    }
+
+    return { status: "conflict", currentStatus: currentLead.status as LeadStatus }
+  } catch (error) {
+    console.error("updateLeadStatus: unexpected failure", error)
+    return { status: "error", error: "Não foi possível alterar o status. Tente novamente." }
   }
 }
