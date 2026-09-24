@@ -43,3 +43,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-contratos-cadastro-e-upload-encriptado.md`
   summary: Listing/history query surfacing all registered contracts (metadata in clear text) for super_admins.
   evidence: Multi-goal split — independently shippable read-side deliverable, depends only on the `contracts` table from this spec, not on the download/log story.
+- source_spec: `_bmad-output/implementation-artifacts/spec-contratos-download-e-log-de-acesso.md`
+  summary: Decide `ON DELETE` referential-action policy for `contract_access_log.contract_id`'s FK to `contracts.id` (currently `NO ACTION`, blocking any future contract delete once it has an access-log row).
+  evidence: Blind Hunter review — same open class of issue as the existing Epic-1 deferred item on `admin_users`/`leads`/`projects` FKs. No epic ships a delete flow for `contracts` yet, so no live trigger path; needs a product decision (cascade vs. block), not a code guess.
