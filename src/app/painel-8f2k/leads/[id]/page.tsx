@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { AdminNav } from "@/components/admin/admin-nav"
@@ -10,6 +11,11 @@ import { markLeadViewed } from "@/lib/leads/mark-lead-viewed"
 import { createClient } from "@/lib/supabase/server"
 
 import { InteractionForm, LeadDetailControls, MeetingActions, MeetingForm } from "./lead-detail-controls"
+
+export const metadata: Metadata = {
+  title: "Detalhe do lead — Vexiom",
+  robots: { index: false, follow: false },
+}
 
 const INTERACTION_LABELS: Record<string, string> = {
   nota: "Nota interna",

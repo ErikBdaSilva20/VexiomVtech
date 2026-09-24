@@ -24,7 +24,9 @@ const PAGE_SIZE = 20
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
 
 function validDate(value: string | undefined): value is string {
-  return Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value)))
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const date = new Date(value + "T00:00:00Z")
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
 }
 
 function formatDate(value: string) {
@@ -56,10 +58,10 @@ export default async function FinancialPage({
   const defaultFrom = today.slice(0, 7) + "-01"
   const requestedFrom = first(raw.from)
   const requestedTo = first(raw.to)
-  const from = validDate(requestedFrom) && validDate(requestedTo) && requestedFrom <= requestedTo
-    ? requestedFrom : defaultFrom
-  const to = validDate(requestedFrom) && validDate(requestedTo) && requestedFrom <= requestedTo
-    ? requestedTo : today
+  const hasCustomPeriod = requestedFrom !== undefined || requestedTo !== undefined
+  const validPeriod = validDate(requestedFrom) && validDate(requestedTo) && requestedFrom <= requestedTo
+  const from = validPeriod ? requestedFrom : defaultFrom
+  const to = validPeriod ? requestedTo : today
   const requestedPage = Number(first(raw.page))
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 && requestedPage <= 10000 ? requestedPage : 1
   const requestedProject = first(raw.project_id)
@@ -114,6 +116,12 @@ export default async function FinancialPage({
           <Link href="/painel-8f2k/financeiro/novo" className="inline-flex min-h-11 items-center rounded-md bg-[#fbd020] px-5 text-sm font-semibold text-[#151510] hover:bg-[#ffe45d] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020]">+ Novo lançamento</Link>
         </header>
 
+        {hasCustomPeriod && !validPeriod && (
+          <p role="alert" className="mb-5 rounded-md border border-amber-900/60 bg-amber-950/20 px-4 py-3 text-sm text-amber-200">
+            Período inválido. Exibindo o mês atual; escolha uma data inicial anterior ou igual à final.
+          </p>
+        )}
+
         <section aria-labelledby="financial-period-title" className="mb-6 rounded-xl border border-[#292b28] bg-[#181916] p-5 sm:p-6">
           <h2 id="financial-period-title" className="text-base font-semibold text-white">Período</h2>
           <Form action="/painel-8f2k/financeiro" method="get" className="mt-4 gap-4">
@@ -139,7 +147,7 @@ export default async function FinancialPage({
           <h2 id="financial-summary-title" className="sr-only">Resumo do período</h2>
           <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5"><p className="text-xs text-[#aaa]">Lançamentos no período</p><p className="mt-2 text-3xl font-semibold tabular-nums text-white">{failed ? "—" : total}</p></div>
           <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5"><p className="text-xs text-[#aaa]">Saldo do período</p><p className="mt-2 text-3xl font-semibold text-white">—</p><p className="mt-1 text-xs text-[#85867f]">Consolidado ainda indisponível</p></div>
-          <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5"><p className="text-xs text-[#aaa]">Lucro por projeto</p><p className="mt-2 text-3xl font-semibold text-white">—</p><p className="mt-1 text-xs text-[#85867f]">Selecione um projeto para consultar</p></div>
+          <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5"><p className="text-xs text-[#aaa]">Lucro por projeto</p><p className="mt-2 text-3xl font-semibold text-white">—</p><p className="mt-1 text-xs text-[#85867f]">{projectId ? "Consolidado ainda indisponível" : "Selecione um projeto para consultar"}</p></div>
         </section>
 
         <section aria-labelledby="financial-list-title">

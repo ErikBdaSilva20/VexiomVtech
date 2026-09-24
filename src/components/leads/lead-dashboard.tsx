@@ -2,36 +2,18 @@ import Link from "next/link"
 
 import { Form, FormField, FormInput } from "@/components/forms/form"
 import { LEAD_STATUS_LABELS } from "@/components/leads/lead-status-labels"
-import { LEAD_STATUSES } from "@/lib/leads/lead-status"
 import type { DailyAgendaAlerts } from "@/lib/leads/get-daily-agenda-alerts"
 import type { LeadRiskAlerts } from "@/lib/leads/get-lead-risk-alerts"
 import type { ProspectingOverview } from "@/lib/leads/get-prospecting-overview"
+import { LEAD_STATUSES } from "@/lib/leads/lead-status"
 
 type NamedCount = { label: string; count: number }
 
-function CountTable({ title, rows }: { title: string; rows: NamedCount[] }) {
-  return (
-    <section className="min-w-0 rounded-xl border border-[#292b28] bg-[#181916] p-5 sm:p-6">
-      <h3 className="text-sm font-semibold text-white">{title}</h3>
-      {rows.length === 0 ? (
-        <p className="mt-4 text-sm text-[#85867f]">Sem dados neste período.</p>
-      ) : (
-        <div className="mt-4 max-h-72 overflow-auto">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead className="sr-only"><tr><th>Categoria</th><th>Leads</th></tr></thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.label} className="border-b border-[#292b28] last:border-0">
-                  <th scope="row" className="py-2.5 pr-3 font-normal text-[#bdbeb6]">{row.label}</th>
-                  <td className="py-2.5 text-right font-semibold tabular-nums text-white">{row.count}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
-  )
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(new Date(value + "T12:00:00Z"))
 }
 
 function formatDateTime(value: string) {
@@ -44,26 +26,191 @@ function formatDateTime(value: string) {
 
 function formatMonth(value: string) {
   return new Intl.DateTimeFormat("pt-BR", {
-    month: "short",
+    month: "long",
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(value + "-01T12:00:00Z"))
 }
 
-export function LeadDashboard({
+function CountPanel({
+  title,
+  description,
+  rows,
+}: {
+  title: string
+  description: string
+  rows: NamedCount[]
+}) {
+  return (
+    <section className="min-w-0 rounded-2xl border border-[#30362e] bg-[#171a17] p-5 sm:p-6">
+      <h3 className="text-base font-semibold text-white">{title}</h3>
+      <p className="mt-1 text-xs leading-5 text-[#9fa69c]">{description}</p>
+      {rows.length === 0 ? (
+        <p className="mt-6 rounded-lg border border-dashed border-[#3d443b] px-4 py-8 text-center text-sm text-[#a9b0a6]">
+          Sem dados neste período.
+        </p>
+      ) : (
+        <dl className="mt-5 grid grid-cols-1 gap-x-7 sm:grid-cols-2">
+          {rows.map((row) => (
+            <div key={row.label} className="flex min-w-0 items-center justify-between gap-4 border-b border-[#2c312b] py-3">
+              <dt className="text-sm leading-5 text-[#d2d7cf]">{row.label}</dt>
+              <dd className="shrink-0 rounded-md bg-[#222720] px-2.5 py-1 text-sm font-semibold tabular-nums text-white">
+                {row.count}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </section>
+  )
+}
+
+export function LeadOverview({
   overview,
-  risk,
-  agenda,
   selectedDates,
   invalidPeriod,
-  preservedFilters,
 }: {
   overview: ProspectingOverview | null
-  risk: LeadRiskAlerts | null
-  agenda: DailyAgendaAlerts | null
   selectedDates: { from?: string; to?: string }
   invalidPeriod: boolean
-  preservedFilters: Record<string, string | undefined>
+}) {
+  const funnel = overview
+    ? LEAD_STATUSES.map((status) => ({
+        label: LEAD_STATUS_LABELS[status],
+        count: overview.funnel[status],
+      }))
+    : []
+  const projectTypes = overview
+    ? Object.entries(overview.projectTypeDistribution)
+        .map(([label, count]) => ({ label, count }))
+        .sort((left, right) => right.count - left.count)
+    : []
+  const monthlyVolume = overview?.volumeByMonth.map(({ month, count }) => ({
+    label: formatMonth(month),
+    count,
+  })) ?? []
+  const activeLeads = overview
+    ? overview.totalLeads
+      - overview.funnel.contrato_fechado
+      - overview.funnel.nao_convertido
+      - overview.funnel.em_suporte_continuo
+    : null
+
+  return (
+    <section aria-labelledby="overview-title">
+      <div className="mb-6 flex flex-col gap-5 rounded-2xl border border-[#30362e] bg-[#171a17] p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#fbd020]">Desempenho comercial</p>
+          <h2 id="overview-title" className="mt-2 text-2xl font-semibold tracking-tight text-white">Visão geral</h2>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-[#aeb5ab]">
+            Acompanhe o volume e a evolução das oportunidades no período escolhido.
+          </p>
+        </div>
+        <Form action="/painel-8f2k/leads" method="get" className="grid w-full grid-cols-2 items-end gap-3 lg:w-auto lg:grid-cols-[minmax(150px,1fr)_minmax(150px,1fr)_auto]">
+          <input type="hidden" name="section" value="overview" />
+          <FormField htmlFor="dashboard-from" label="Data inicial">
+            <FormInput id="dashboard-from" name="from" type="date" defaultValue={overview?.from ?? selectedDates.from ?? ""} />
+          </FormField>
+          <FormField htmlFor="dashboard-to" label="Data final">
+            <FormInput id="dashboard-to" name="to" type="date" defaultValue={overview?.to ?? selectedDates.to ?? ""} />
+          </FormField>
+          <button type="submit" className="col-span-2 min-h-11 rounded-lg bg-[#fbd020] px-5 text-sm font-semibold text-[#17140a] transition hover:bg-[#ffe15b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020] lg:col-span-1">
+            Atualizar
+          </button>
+        </Form>
+      </div>
+
+      {invalidPeriod && (
+        <p role="alert" className="mb-5 rounded-lg border border-amber-800/60 bg-amber-950/30 px-4 py-3 text-sm text-amber-100">
+          O período informado é inválido. Estamos exibindo os últimos 12 meses.
+        </p>
+      )}
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[
+          {
+            label: "Leads recebidos",
+            value: overview ? String(overview.totalLeads) : "—",
+            detail: "no período",
+            color: "text-white",
+          },
+          {
+            label: "Em andamento",
+            value: activeLeads === null ? "—" : String(Math.max(0, activeLeads)),
+            detail: "oportunidades ativas",
+            color: "text-[#fbd020]",
+          },
+          {
+            label: "Contratos fechados",
+            value: overview ? String(overview.funnel.contrato_fechado) : "—",
+            detail: "convertidos",
+            color: "text-emerald-300",
+          },
+          {
+            label: "Taxa de conversão",
+            value: overview
+              ? new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 }).format(overview.conversionRate)
+              : "—",
+            detail: "sobre o total",
+            color: "text-[#9ed7ff]",
+          },
+        ].map((item) => (
+          <article key={item.label} className="min-w-0 rounded-2xl border border-[#30362e] bg-[#171a17] p-4 sm:p-5">
+            <p className="text-xs font-medium leading-5 text-[#afb6ac]">{item.label}</p>
+            <p className={"mt-2 text-3xl font-semibold tabular-nums tracking-tight sm:text-4xl " + item.color}>{item.value}</p>
+            <p className="mt-1 text-xs text-[#858d82]">{item.detail}</p>
+          </article>
+        ))}
+      </div>
+
+      {overview ? (
+        <p className="mt-3 text-xs text-[#929a90]">
+          Período analisado: {formatDate(overview.from)} a {formatDate(overview.to)}.
+        </p>
+      ) : (
+        <p role="status" className="mt-4 rounded-lg border border-[#4d412c] bg-[#211d14] px-4 py-3 text-sm text-[#e0cfa8]">
+          Os indicadores estão temporariamente indisponíveis.
+        </p>
+      )}
+
+      {overview?.totalLeads === 0 ? (
+        <section className="mt-6 rounded-2xl border border-dashed border-[#3c443a] bg-[#141714] px-6 py-14 text-center">
+          <h3 className="text-lg font-semibold text-white">Nenhum lead neste período</h3>
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#a9b0a6]">
+            Altere as datas acima para consultar outro intervalo ou cadastre uma nova oportunidade.
+          </p>
+        </section>
+      ) : (
+        <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-2">
+          <CountPanel
+            title="Funil por etapa"
+            description="Quantidade de oportunidades em cada momento comercial."
+            rows={funnel}
+          />
+          <CountPanel
+            title="Tipos de projeto"
+            description="Demandas mais procuradas pelos contatos recebidos."
+            rows={projectTypes}
+          />
+          <div className="xl:col-span-2">
+            <CountPanel
+              title="Leads recebidos por mês"
+              description="Histórico mensal dentro do período selecionado."
+              rows={monthlyVolume}
+            />
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
+
+export function LeadAlerts({
+  risk,
+  agenda,
+}: {
+  risk: LeadRiskAlerts | null
+  agenda: DailyAgendaAlerts | null
 }) {
   const appointments = agenda
     ? [
@@ -85,56 +232,79 @@ export function LeadDashboard({
     : []
 
   const riskGroups = risk ? [
-    { label: "SLA estourado", detail: "Sem visualização após 12 horas úteis", items: risk.slaBreached },
-    { label: "Sem próxima ação", detail: "Leads ativos sem acompanhamento definido", items: risk.noNextAction },
-    { label: "Follow-ups vencidos", detail: "Ações marcadas para o passado", items: risk.overdueFollowUps },
-    { label: "Esfriando", detail: "Sem interação há mais de 5 dias", items: risk.coolingLeads },
+    {
+      label: "SLA estourado",
+      detail: "Ainda não visualizados após 12 horas úteis.",
+      items: risk.slaBreached,
+      accent: "border-l-red-400",
+      count: "text-red-200",
+    },
+    {
+      label: "Sem próxima ação",
+      detail: "Leads ativos sem um acompanhamento definido.",
+      items: risk.noNextAction,
+      accent: "border-l-amber-300",
+      count: "text-amber-200",
+    },
+    {
+      label: "Follow-ups vencidos",
+      detail: "Ações programadas para uma data que já passou.",
+      items: risk.overdueFollowUps,
+      accent: "border-l-orange-300",
+      count: "text-orange-200",
+    },
+    {
+      label: "Leads esfriando",
+      detail: "Sem interação registrada há mais de cinco dias.",
+      items: risk.coolingLeads,
+      accent: "border-l-sky-300",
+      count: "text-sky-200",
+    },
   ] : []
+  const visibleRiskGroups = riskGroups.filter((group) => group.items.length > 0)
   const alertCount = riskGroups.reduce((sum, group) => sum + group.items.length, 0)
-  const funnel = overview
-    ? LEAD_STATUSES.map((status) => ({ label: LEAD_STATUS_LABELS[status], count: overview.funnel[status] }))
-    : []
-  const projectTypes = overview
-    ? Object.entries(overview.projectTypeDistribution)
-        .map(([label, count]) => ({ label, count }))
-        .sort((left, right) => right.count - left.count)
-    : []
-  const monthlyVolume = overview?.volumeByMonth.map(({ month, count }) => ({
-    label: formatMonth(month),
-    count,
-  })) ?? []
+  const urgentCount = risk ? risk.slaBreached.length + risk.overdueFollowUps.length : null
 
   return (
-    <section aria-labelledby="lead-dashboard-title" className="mb-9">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#fbd020]">Saúde da prospecção</p>
-          <h2 id="lead-dashboard-title" className="text-xl font-semibold text-white sm:text-2xl">Visão geral</h2>
-        </div>
-        <Form action="/painel-8f2k/leads" method="get" className="grid w-full grid-cols-2 items-end gap-2 sm:w-auto sm:grid-cols-[minmax(145px,1fr)_minmax(145px,1fr)_auto]">
-          {Object.entries(preservedFilters).map(([key, value]) => value ? <input key={key} type="hidden" name={key} value={value} /> : null)}
-          <FormField htmlFor="dashboard-from" label="De">
-            <FormInput id="dashboard-from" name="from" type="date" defaultValue={overview?.from ?? selectedDates.from ?? ""} />
-          </FormField>
-          <FormField htmlFor="dashboard-to" label="Até">
-            <FormInput id="dashboard-to" name="to" type="date" defaultValue={overview?.to ?? selectedDates.to ?? ""} />
-          </FormField>
-          <button type="submit" className="col-span-2 min-h-11 rounded-md border border-[#4d4d43] px-4 text-sm font-medium text-[#f1f1ed] hover:border-[#fbd020] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020] sm:col-span-1">Aplicar</button>
-        </Form>
+    <section aria-labelledby="alerts-title">
+      <header className="mb-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#fbd020]">Prioridades comerciais</p>
+        <h2 id="alerts-title" className="mt-2 text-2xl font-semibold tracking-tight text-white">Alertas e agenda</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-[#aeb5ab]">
+          Comece pelo que está atrasado ou exige contato imediato.
+        </p>
+      </header>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {[
+          { label: "Sinais de atenção", value: risk ? alertCount : null, color: "text-amber-200" },
+          { label: "Urgentes", value: urgentCount, color: "text-red-200" },
+          { label: "Agenda até hoje", value: agenda ? appointments.length : null, color: "text-[#fbd020]" },
+        ].map((item) => (
+          <article key={item.label} className="rounded-2xl border border-[#30362e] bg-[#171a17] p-5">
+            <p className="text-xs font-medium text-[#afb6ac]">{item.label}</p>
+            <p className={"mt-2 text-3xl font-semibold tabular-nums " + item.color}>{item.value ?? "—"}</p>
+          </article>
+        ))}
       </div>
 
-      {invalidPeriod && <p role="alert" className="mb-4 text-sm text-amber-200">Período inválido; exibindo os últimos 12 meses.</p>}
-
       {appointments.length > 0 && (
-        <section aria-labelledby="appointments-title" className="mb-5 rounded-xl border border-[#917225] bg-[#2b2512] p-5 sm:p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#fbd020]">Atenção hoje e em atraso</p>
-          <h3 id="appointments-title" className="mt-1 text-lg font-semibold text-white">Follow-ups e reuniões</h3>
-          <ul className="mt-3 grid max-h-72 list-none gap-2 overflow-auto p-0 sm:grid-cols-2">
+        <section aria-labelledby="agenda-title" className="mt-6 overflow-hidden rounded-2xl border border-[#6b5a24] bg-[#1c1a12]">
+          <div className="border-b border-[#51461f] px-5 py-4 sm:px-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#fbd020]">Hoje e em atraso</p>
+            <h3 id="agenda-title" className="mt-1 text-lg font-semibold text-white">Compromissos que pedem ação</h3>
+          </div>
+          <ul className="grid list-none gap-px bg-[#39331d] p-0 md:grid-cols-2">
             {appointments.map((item) => (
-              <li key={item.id}>
-                <Link prefetch={false} href={"/painel-8f2k/leads/" + item.leadId} className="flex min-h-12 flex-wrap items-center gap-x-2 rounded-md border border-[#6d5a28] bg-[#211d12] px-3 py-2 text-sm hover:border-[#fbd020] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020]">
-                  <time dateTime={item.at} className="font-semibold text-white">{formatDateTime(item.at)}</time>
-                  <span className="text-[#e5dfca]">{item.kind}: {item.lead || "Lead"}</span>
+              <li key={item.id} className="bg-[#1c1a12]">
+                <Link
+                  prefetch={false}
+                  href={"/painel-8f2k/leads/" + item.leadId}
+                  className="flex min-h-20 flex-col justify-center gap-1 px-5 py-4 transition hover:bg-[#252217] focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#fbd020] sm:px-6"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-[0.1em] text-[#d9c66a]">{item.kind}</span>
+                  <span className="text-sm font-semibold text-white">{item.lead || "Lead"}</span>
+                  <time dateTime={item.at} className="text-xs text-[#b8b39e]">{formatDateTime(item.at)}</time>
                 </Link>
               </li>
             ))}
@@ -142,77 +312,52 @@ export function LeadDashboard({
         </section>
       )}
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {[
-          { label: "Leads no período", value: overview ? String(overview.totalLeads) : "—" },
-          { label: "Contratos fechados", value: overview ? String(overview.funnel.contrato_fechado) : "—" },
-          { label: "Conversão", value: overview ? new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 }).format(overview.conversionRate) : "—" },
-          { label: "Alertas ativos", value: risk ? String(alertCount) : "—" },
-        ].map((item) => (
-          <div key={item.label} className="min-w-0 rounded-xl border border-[#292b28] bg-[#181916] p-4 sm:p-5">
-            <p className="text-xs leading-5 text-[#aaa]">{item.label}</p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums text-white sm:text-3xl">{item.value}</p>
-          </div>
-        ))}
-      </div>
-
-      {overview ? (
-        <p className="mt-3 text-xs text-[#85867f]">Dados de {overview.from} até {overview.to}. Contagens e conversão consideram esse período.</p>
+      {risk === null ? (
+        <p role="status" className="mt-6 rounded-xl border border-[#4d412c] bg-[#211d14] px-4 py-4 text-sm text-[#e0cfa8]">
+          Os alertas de risco estão temporariamente indisponíveis.
+        </p>
+      ) : visibleRiskGroups.length === 0 ? (
+        <section className="mt-6 rounded-2xl border border-emerald-900/70 bg-emerald-950/20 px-6 py-12 text-center">
+          <p className="text-2xl" aria-hidden="true">✓</p>
+          <h3 className="mt-2 text-lg font-semibold text-emerald-100">Nenhuma pendência crítica</h3>
+          <p className="mt-2 text-sm text-[#adc4b3]">Os leads ativos estão dentro dos critérios de acompanhamento.</p>
+        </section>
       ) : (
-        <p role="status" className="mt-3 text-xs text-[#b8a98a]">Os indicadores de funil estão temporariamente indisponíveis.</p>
+        <div className="mt-6 space-y-4">
+          {visibleRiskGroups.map((group) => (
+            <section key={group.label} className={"rounded-2xl border border-[#343a32] border-l-4 bg-[#171a17] p-5 sm:p-6 " + group.accent}>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-base font-semibold text-white">{group.label}</h3>
+                  <p className="mt-1 text-sm leading-5 text-[#aab1a7]">{group.detail}</p>
+                </div>
+                <span className={"text-2xl font-semibold tabular-nums " + group.count}>{group.items.length}</span>
+              </div>
+              <ul className="mt-4 grid list-none gap-2 p-0 sm:grid-cols-2 xl:grid-cols-3">
+                {group.items.map((item) => (
+                  <li key={item.id}>
+                    <Link
+                      prefetch={false}
+                      href={"/painel-8f2k/leads/" + item.id}
+                      className="flex min-h-12 items-center justify-between gap-3 rounded-lg border border-[#343a32] bg-[#101210] px-4 py-3 text-sm text-[#e2e6df] transition hover:border-[#646d60] hover:bg-[#1d211c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020]"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium">{item.name}</span>
+                        {item.company && <span className="mt-0.5 block truncate text-xs text-[#959d92]">{item.company}</span>}
+                      </span>
+                      <span aria-hidden="true" className="shrink-0 text-[#fbd020]">→</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
       )}
 
-      <div className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <CountTable title="Funil por status" rows={funnel} />
-        <CountTable title="Tipos de projeto" rows={projectTypes} />
-        <CountTable title="Volume por mês" rows={monthlyVolume} />
-      </div>
-
-      <section aria-labelledby="risk-title" className="mt-6">
-        <h3 id="risk-title" className="mb-3 text-lg font-semibold text-white">Pontos de atenção</h3>
-        {risk ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {riskGroups.map((group) => (
-              <article key={group.label} className="rounded-xl border border-[#49382e] bg-[#1e1a17] p-4 sm:p-5">
-                <p className="text-2xl font-semibold tabular-nums text-[#ffd299]">{group.items.length}</p>
-                <h4 className="mt-1 text-sm font-semibold text-white">{group.label}</h4>
-                <p className="mt-1 text-xs leading-5 text-[#a7a39a]">{group.detail}</p>
-                {group.items.length ? (
-                  <ul className="mt-3 list-none space-y-1 p-0 text-xs">
-                    {group.items.slice(0, 6).map((item) => (
-                      <li key={item.id}>
-                        <Link prefetch={false} href={"/painel-8f2k/leads/" + item.id} className="text-[#d8d4ca] underline-offset-4 hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-[#fbd020]">
-                          {item.name}{item.company ? " · " + item.company : ""}
-                        </Link>
-                      </li>
-                    ))}
-                    {group.items.length > 6 && (
-                      <li className="pt-1">
-                        <details>
-                          <summary className="cursor-pointer text-[#e0c775] hover:text-white">
-                            Ver mais {group.items.length - 6} leads
-                          </summary>
-                          <ul className="mt-2 list-none space-y-1 pl-3">
-                            {group.items.slice(6).map((item) => (
-                              <li key={item.id}>
-                                <Link prefetch={false} href={"/painel-8f2k/leads/" + item.id} className="text-[#d8d4ca] underline-offset-4 hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-[#fbd020]">
-                                  {item.name}{item.company ? " · " + item.company : ""}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </details>
-                      </li>
-                    )}
-                  </ul>
-                ) : <p className="mt-3 text-xs text-[#9eaa99]">Nenhum lead nesta condição.</p>}
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="rounded-xl border border-[#292b28] bg-[#181916] p-5 text-sm text-[#aaa]">Os alertas de risco estão temporariamente indisponíveis.</p>
-        )}
-      </section>
+      {agenda === null && (
+        <p role="status" className="mt-4 text-sm text-[#c7b98e]">A agenda do dia não pôde ser carregada agora.</p>
+      )}
     </section>
   )
 }

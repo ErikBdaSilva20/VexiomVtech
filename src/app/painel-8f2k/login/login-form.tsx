@@ -1,6 +1,7 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 import {
   Form,
@@ -13,6 +14,13 @@ import { login } from "./actions"
 
 export function LoginForm() {
   const [state, formAction, pending] = useActionState(login, undefined)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (state?.status !== "success") return
+    router.replace("/painel-8f2k/leads")
+    router.refresh()
+  }, [router, state])
 
   return (
     <Form action={formAction} className="gap-[calc(18*var(--unit))]">
@@ -36,7 +44,7 @@ export function LoginForm() {
           required
         />
       </FormField>
-      {state?.error && (
+      {state?.status === "error" && (
         <p
           className="rounded-[4px] border border-[#7c3434] bg-[#351b1b] px-[14px] py-[12px] text-[13px] leading-[1.5] text-[#ffd6d6]"
           role="alert"
@@ -45,10 +53,10 @@ export function LoginForm() {
         </p>
       )}
       <FormSubmitButton
-        disabled={pending}
+        disabled={pending || state?.status === "success"}
         className="mt-[calc(4*var(--unit))] w-full self-stretch [@media(max-width:650px)]:w-full"
       >
-        {pending ? "Entrando..." : "Entrar"}
+        {pending || state?.status === "success" ? "Entrando..." : "Entrar"}
       </FormSubmitButton>
     </Form>
   )

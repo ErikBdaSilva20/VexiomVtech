@@ -7,6 +7,9 @@ const remotePatterns = supabaseUrl
 
 const nextConfig: NextConfig = {
   images: { remotePatterns },
+  experimental: {
+    serverActions: { bodySizeLimit: "11mb" },
+  },
 };
 
 export default nextConfig;
