@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
+import { uploadCaseImage } from "@/lib/cases/case-image-upload"
 import { createCase } from "@/lib/cases/create-case"
+import { appendCaseGalleryImages, setCaseCoverImage } from "@/lib/cases/set-case-images"
 import { updateCase } from "@/lib/cases/update-case"
 
 import { createCaseAction, updateCaseAction } from "./actions"
@@ -20,6 +22,15 @@ vi.mock("@/lib/cases/create-case", () => ({
 
 vi.mock("@/lib/cases/update-case", () => ({
   updateCase: vi.fn(),
+}))
+
+vi.mock("@/lib/cases/case-image-upload", () => ({
+  uploadCaseImage: vi.fn(),
+}))
+
+vi.mock("@/lib/cases/set-case-images", () => ({
+  setCaseCoverImage: vi.fn(),
+  appendCaseGalleryImages: vi.fn(),
 }))
 
 function validFormData(overrides: Record<string, string> = {}) {
@@ -43,7 +54,14 @@ beforeEach(() => {
   vi.mocked(getCurrentAdmin).mockReset()
   vi.mocked(createCase).mockReset()
   vi.mocked(updateCase).mockReset()
+  vi.mocked(uploadCaseImage).mockReset()
+  vi.mocked(setCaseCoverImage).mockReset()
+  vi.mocked(appendCaseGalleryImages).mockReset()
 })
+
+function makeFile(name: string, type: string, sizeBytes: number): File {
+  return new File([new Uint8Array(sizeBytes)], name, { type })
+}
 
 describe("createCaseAction", () => {
   it("rejects when there is no session", async () => {
@@ -102,6 +120,51 @@ describe("createCaseAction", () => {
 
     expect(createCase).toHaveBeenCalledWith(expect.anything(), expect.not.objectContaining({ published: expect.anything() }))
   })
+
+  it("uploads a provided cover image and saves its URL after creating the case", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "super_admin", name: "A" })
+    vi.mocked(createCase).mockResolvedValue({ ok: true, id: "case-1" })
+    vi.mocked(uploadCaseImage).mockResolvedValue({ ok: true, url: "https://cdn/cover.png" })
+    vi.mocked(setCaseCoverImage).mockResolvedValue({ ok: true })
+
+    const formData = validFormData()
+    formData.set("cover_image", makeFile("cover.png", "image/png", 1024))
+
+    const result = await createCaseAction(undefined, formData)
+
+    expect(uploadCaseImage).toHaveBeenCalledWith(expect.anything(), "case-1", expect.any(File))
+    expect(setCaseCoverImage).toHaveBeenCalledWith(expect.anything(), "case-1", "https://cdn/cover.png")
+    expect(result).toEqual({ status: "success", id: "case-1", imageErrors: undefined })
+  })
+
+  it("still returns success for the case when the cover image upload fails, with an imageErrors note", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "super_admin", name: "A" })
+    vi.mocked(createCase).mockResolvedValue({ ok: true, id: "case-1" })
+    vi.mocked(uploadCaseImage).mockResolvedValue({ ok: false, error: "Formato inválido. Envie PNG, JPG ou WebP." })
+
+    const formData = validFormData()
+    formData.set("cover_image", makeFile("cover.pdf", "application/pdf", 1024))
+
+    const result = await createCaseAction(undefined, formData)
+
+    expect(result).toEqual({
+      status: "success",
+      id: "case-1",
+      imageErrors: { cover_image: ["Formato inválido. Envie PNG, JPG ou WebP."] },
+    })
+  })
+
+  it("does not attempt an upload when no cover image file was selected", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "super_admin", name: "A" })
+    vi.mocked(createCase).mockResolvedValue({ ok: true, id: "case-1" })
+
+    const formData = validFormData()
+    formData.set("cover_image", makeFile("", "application/octet-stream", 0))
+
+    await createCaseAction(undefined, formData)
+
+    expect(uploadCaseImage).not.toHaveBeenCalled()
+  })
 })
 
 describe("updateCaseAction", () => {
@@ -140,6 +203,27 @@ describe("updateCaseAction", () => {
 
     const result = await updateCaseAction(undefined, validFormData({ case_id: caseId }))
 
-    expect(result).toEqual({ status: "success" })
+    expect(result).toEqual({ status: "success", imageErrors: undefined })
+  })
+
+  it("uploads new gallery images and appends their URLs", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "super_admin", name: "A" })
+    vi.mocked(updateCase).mockResolvedValue({ ok: true })
+    vi.mocked(uploadCaseImage).mockResolvedValue({ ok: true, url: "https://cdn/gallery-1.png" })
+    vi.mocked(appendCaseGalleryImages).mockResolvedValue({ ok: true })
+
+    const formData = validFormData({ case_id: caseId })
+    formData.append("gallery_images", makeFile("g1.png", "image/png", 1024))
+    formData.append("gallery_images", makeFile("g2.png", "image/png", 1024))
+
+    const result = await updateCaseAction(undefined, formData)
+
+    expect(uploadCaseImage).toHaveBeenCalledTimes(2)
+    expect(appendCaseGalleryImages).toHaveBeenCalledWith(
+      expect.anything(),
+      caseId,
+      ["https://cdn/gallery-1.png", "https://cdn/gallery-1.png"]
+    )
+    expect(result).toEqual({ status: "success", imageErrors: undefined })
   })
 })
