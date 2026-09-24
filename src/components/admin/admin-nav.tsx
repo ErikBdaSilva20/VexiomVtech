@@ -2,13 +2,14 @@ import Link from "next/link"
 
 import type { AdminRole } from "@/lib/supabase/database.types"
 
-type Section = "leads" | "cases" | "projects" | "financeiro"
+type Section = "leads" | "cases" | "projects" | "financeiro" | "contracts"
 
 const LINKS: { section: Section; label: string; href: string; superAdminOnly: boolean }[] = [
   { section: "leads", label: "Leads", href: "/painel-8f2k/leads", superAdminOnly: false },
   { section: "cases", label: "Cases", href: "/painel-8f2k/cases", superAdminOnly: true },
   { section: "projects", label: "Projetos", href: "/painel-8f2k/projetos", superAdminOnly: true },
   { section: "financeiro", label: "Financeiro", href: "/painel-8f2k/financeiro", superAdminOnly: true },
+  { section: "contracts", label: "Contratos", href: "/painel-8f2k/contratos", superAdminOnly: true },
 ]
 
 export function AdminNav({
