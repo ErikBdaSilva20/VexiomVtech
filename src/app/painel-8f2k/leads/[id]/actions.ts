@@ -1,5 +1,7 @@
 "use server"
 
+import { z } from "zod"
+
 import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
 import { createLeadInteractionSchema } from "@/lib/leads/lead-interaction-schema"
 import { createClient } from "@/lib/supabase/server"
@@ -7,6 +9,11 @@ import { createClient } from "@/lib/supabase/server"
 export type CreateLeadInteractionState =
   | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
   | { status: "success"; id: string }
+  | undefined
+
+export type MarkLeadRespondedState =
+  | { status: "error"; error: string }
+  | { status: "success" }
   | undefined
 
 /**
@@ -71,5 +78,51 @@ export async function createLeadInteraction(
   } catch (error) {
     console.error("createLeadInteraction: unexpected failure", error)
     return { status: "error", error: "Não foi possível registrar a interação. Tente novamente." }
+  }
+}
+
+/**
+ * Manually marks a lead as responded (FR11 AC3). Unlike `markLeadViewed`,
+ * `responded_at` is deliberately overwritten on every call: the ACs only
+ * require `viewed_at` to keep its first value, and this is an explicit,
+ * one-off admin action (not a passive side effect of opening the page), so
+ * each click reflects "responded as of now", not "responded for the first
+ * time ever".
+ */
+export async function markLeadResponded(
+  _prevState: MarkLeadRespondedState,
+  formData: FormData
+): Promise<MarkLeadRespondedState> {
+  const admin = await getCurrentAdmin()
+
+  if (!admin) {
+    return { status: "error", error: "Sessão expirada. Faça login novamente." }
+  }
+
+  const parsedLeadId = z.uuid().safeParse(formData.get("lead_id"))
+
+  if (!parsedLeadId.success) {
+    return { status: "error", error: "Lead inválido." }
+  }
+
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from("leads")
+      .update({ responded_at: new Date().toISOString() })
+      .eq("id", parsedLeadId.data)
+      .select("id")
+      .single()
+
+    if (error || !data) {
+      console.error("markLeadResponded: failed to update lead", error)
+      return { status: "error", error: "Não foi possível marcar o lead como respondido. Tente novamente." }
+    }
+
+    return { status: "success" }
+  } catch (error) {
+    console.error("markLeadResponded: unexpected failure", error)
+    return { status: "error", error: "Não foi possível marcar o lead como respondido. Tente novamente." }
   }
 }

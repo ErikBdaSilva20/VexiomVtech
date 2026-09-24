@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
 import { createClient } from "@/lib/supabase/server"
-import { createLeadInteraction } from "./actions"
+import { createLeadInteraction, markLeadResponded } from "./actions"
 
 vi.mock("@/lib/auth/get-current-admin", () => ({
   getCurrentAdmin: vi.fn(),
@@ -156,6 +156,99 @@ describe("createLeadInteraction", () => {
     expect(result).toEqual({
       status: "error",
       error: "Não foi possível registrar a interação. Tente novamente.",
+    })
+  })
+})
+
+function leadIdFormData(leadId: string) {
+  const formData = new FormData()
+  formData.set("lead_id", leadId)
+  return formData
+}
+
+function mockUpdateClient(singleResult: { data: { id: string } | null; error: unknown }) {
+  const single = vi.fn().mockResolvedValue(singleResult)
+  const select = vi.fn().mockReturnValue({ single })
+  const eq = vi.fn().mockReturnValue({ select })
+  const update = vi.fn().mockReturnValue({ eq })
+  const from = vi.fn().mockReturnValue({ update })
+
+  vi.mocked(createClient).mockResolvedValue({ from } as never)
+
+  return { from, update, eq }
+}
+
+describe("markLeadResponded", () => {
+  beforeEach(() => {
+    vi.mocked(getCurrentAdmin).mockReset()
+    vi.mocked(createClient).mockReset()
+  })
+
+  it("returns an error and does not touch the DB when unauthenticated", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue(null)
+
+    const result = await markLeadResponded(
+      undefined,
+      leadIdFormData("11111111-1111-4111-8111-111111111111")
+    )
+
+    expect(result).toEqual({ status: "error", error: expect.any(String) })
+    expect(createClient).not.toHaveBeenCalled()
+  })
+
+  it("returns an error and does not touch the DB when lead_id is not a UUID", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+
+    const result = await markLeadResponded(undefined, leadIdFormData("not-a-uuid"))
+
+    expect(result).toEqual({ status: "error", error: "Lead inválido." })
+    expect(createClient).not.toHaveBeenCalled()
+  })
+
+  it("sets responded_at to the current time on success", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    const leadId = "11111111-1111-4111-8111-111111111111"
+    const { update, eq } = mockUpdateClient({ data: { id: leadId }, error: null })
+
+    const before = Date.now()
+    const result = await markLeadResponded(undefined, leadIdFormData(leadId))
+    const after = Date.now()
+
+    expect(result).toEqual({ status: "success" })
+    expect(eq).toHaveBeenCalledWith("id", leadId)
+    const respondedAt = update.mock.calls[0][0].responded_at as string
+    const respondedTime = new Date(respondedAt).getTime()
+    expect(respondedTime).toBeGreaterThanOrEqual(before)
+    expect(respondedTime).toBeLessThanOrEqual(after)
+  })
+
+  it("returns a generic error when the update fails", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    mockUpdateClient({ data: null, error: { message: "RLS denied" } })
+
+    const result = await markLeadResponded(
+      undefined,
+      leadIdFormData("11111111-1111-4111-8111-111111111111")
+    )
+
+    expect(result).toEqual({
+      status: "error",
+      error: "Não foi possível marcar o lead como respondido. Tente novamente.",
+    })
+  })
+
+  it("returns a generic error when no lead matches (0 rows updated)", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    mockUpdateClient({ data: null, error: null })
+
+    const result = await markLeadResponded(
+      undefined,
+      leadIdFormData("11111111-1111-4111-8111-111111111111")
+    )
+
+    expect(result).toEqual({
+      status: "error",
+      error: "Não foi possível marcar o lead como respondido. Tente novamente.",
     })
   })
 })
