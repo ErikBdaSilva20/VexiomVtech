@@ -28,3 +28,9 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-1-envio-de-lead-pelo-formulario-publico.md`
   summary: Decide whether `preferred_channel` and `preferred_time` should be closed enums instead of free text.
   evidence: Blind Hunter review flagged these look like they should be a fixed set of options (e.g. channel: whatsapp/email/phone) but no FR/epic doc defines the taxonomy, so free text was kept to avoid guessing values the product doesn't specify. A typo'd value would silently pass validation and fragment admin-side filtering/reporting once story 2.4 (search/filters) exists.
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-listagem-de-leads-com-busca-e-filtros.md`
+  summary: `listLeads` search is ASCII case-insensitive only (`ilike`); accented Portuguese terms won't fuzzy-match their unaccented form (e.g. "joao" won't match "João").
+  evidence: No FR requires accent-insensitive search; would need `unaccent`/a trigram index or normalization on both sides. Revisit if search quality becomes a real complaint once the leads list page ships.
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-listagem-de-leads-com-busca-e-filtros.md`
+  summary: `%`/`_` typed by a user in the search box are escaped and matched literally, not treated as user-controlled wildcards.
+  evidence: Deliberate safe default (also closes off a minor DoS vector from pathological wildcard patterns); no requirement asks for user-controlled SQL-style wildcards in the search box.
