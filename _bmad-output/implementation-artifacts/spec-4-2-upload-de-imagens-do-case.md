@@ -66,6 +66,7 @@ baseline_commit: '18cee6f'
 - 5MB per-file cap is a judgment call (not specified in the AC/docs) — reasonable for a portfolio screenshot; revisit if real usage needs larger source files.
 - `pnpm tsc --noEmit`, `pnpm lint`, `pnpm test` (249 tests) all pass.
 - Not verified against a live Supabase Storage bucket — no CLI/DB access in this environment.
+- **Post-hoc audit fix (2026-09-24):** the initial version trusted the client-supplied `File.type` alone for both the format gate and the stored extension — a spoofed `type` (e.g. HTML declared as `image/png`) would have been written to the *public* `case-images` bucket with that same Content-Type. Added a magic-byte check (`matchesDeclaredType`) so the declared MIME type must match the file's real signature. Also fixed `external_link` in `case-schema.ts` having no max length, unlike every other free-text field.
 - This closes the backend for Epic 4's first two stories. Story 4.3 (public `/cases` page) is a read-only page — Codex has already built it against direct Supabase queries (RLS-protected `cases_select_published_or_super_admin`), so it needs no additional backend work; flagging this to the user rather than assuming.
 
 ## Verification

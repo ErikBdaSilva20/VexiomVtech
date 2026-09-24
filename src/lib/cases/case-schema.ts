@@ -60,7 +60,10 @@ const caseFieldsSchema = z.object({
   description: z.string().trim().min(1, "Descrição é obrigatória.").max(MAX_LONG_TEXT),
   problem_solved: z.string().trim().min(1, "Campo obrigatório.").max(MAX_LONG_TEXT),
   motivation: z.string().trim().min(1, "Campo obrigatório.").max(MAX_LONG_TEXT),
-  external_link: z.union([z.url("Link inválido."), z.literal("")]).nullish().transform((value) => (value ? value : null)),
+  external_link: z
+    .union([z.url("Link inválido.").max(MAX_SHORT_TEXT, `Deve ter no máximo ${MAX_SHORT_TEXT} caracteres.`), z.literal("")])
+    .nullish()
+    .transform((value) => (value ? value : null)),
   tech_stack: techStackSchema,
   is_founder_project: z.boolean(),
   display_order: z.coerce.number().int("Deve ser um número inteiro.").min(0, "Não pode ser negativo."),

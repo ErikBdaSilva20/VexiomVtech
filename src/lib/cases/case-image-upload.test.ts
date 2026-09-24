@@ -9,8 +9,16 @@ function mockClient(uploadResult: { error: unknown }, publicUrl = "https://cdn.e
   return { storage: { from } } as never
 }
 
-function makeFile(name: string, type: string, sizeBytes: number): File {
-  const content = new Uint8Array(sizeBytes)
+const SIGNATURES: Record<string, number[]> = {
+  "image/png": [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
+  "image/jpeg": [0xff, 0xd8, 0xff, 0xe0],
+  "image/webp": [0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50],
+}
+
+/** Builds a File with a real signature for `type`, padded to `sizeBytes`. */
+function makeFile(name: string, type: string, sizeBytes: number, signature = SIGNATURES[type]): File {
+  const content = new Uint8Array(Math.max(sizeBytes, signature?.length ?? 0))
+  if (signature) content.set(signature)
   return new File([content], name, { type })
 }
 
@@ -24,9 +32,16 @@ describe("uploadCaseImage", () => {
     expect(result).toEqual({ ok: true, url: "https://cdn.example.com/case-images/x.png" })
   })
 
+  it("uploads a valid JPEG and WebP", async () => {
+    const supabase = mockClient({ error: null })
+
+    expect((await uploadCaseImage(supabase, "case-1", makeFile("a.jpg", "image/jpeg", 1024))).ok).toBe(true)
+    expect((await uploadCaseImage(supabase, "case-1", makeFile("a.webp", "image/webp", 1024))).ok).toBe(true)
+  })
+
   it("rejects an empty file", async () => {
     const supabase = mockClient({ error: null })
-    const file = makeFile("empty.png", "image/png", 0)
+    const file = new File([], "empty.png", { type: "image/png" })
 
     const result = await uploadCaseImage(supabase, "case-1", file)
 
@@ -44,11 +59,22 @@ describe("uploadCaseImage", () => {
 
   it("rejects a disallowed mime type", async () => {
     const supabase = mockClient({ error: null })
-    const file = makeFile("doc.pdf", "application/pdf", 1024)
+    const file = makeFile("doc.pdf", "application/pdf", 1024, [0x25, 0x50, 0x44, 0x46])
 
     const result = await uploadCaseImage(supabase, "case-1", file)
 
     expect(result).toEqual({ ok: false, error: "Formato inválido. Envie PNG, JPG ou WebP." })
+  })
+
+  it("rejects a file whose declared type doesn't match its real content (spoofed MIME type)", async () => {
+    const supabase = mockClient({ error: null })
+    // An HTML payload declaring itself as image/png.
+    const htmlBytes = new TextEncoder().encode("<script>alert(1)</script>")
+    const file = new File([htmlBytes], "cover.png", { type: "image/png" })
+
+    const result = await uploadCaseImage(supabase, "case-1", file)
+
+    expect(result).toEqual({ ok: false, error: "O arquivo não é uma imagem válida no formato declarado." })
   })
 
   it("returns a generic error and logs when the storage upload fails", async () => {

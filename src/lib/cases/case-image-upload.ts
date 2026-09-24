@@ -14,10 +14,39 @@ const EXTENSION_BY_MIME_TYPE: Record<string, string> = {
 
 export type UploadCaseImageResult = { ok: true; url: string } | { ok: false; error: string }
 
-function validateImageFile(file: File): string | null {
+// A browser sets `File.type` from OS/extension sniffing, but nothing stops a
+// caller invoking this Server Action directly from sending an arbitrary
+// Blob with a spoofed `type` — since the object is written back with that
+// same type as its Content-Type into a *public* bucket linked straight from
+// the marketing site, checking the real file signature (not just the
+// client-asserted MIME type) is worth the extra read before upload.
+const MAGIC_BYTES: Record<string, number[]> = {
+  "image/png": [0x89, 0x50, 0x4e, 0x47],
+  "image/jpeg": [0xff, 0xd8, 0xff],
+  "image/webp": [0x52, 0x49, 0x46, 0x46], // "RIFF" (WEBP marker follows at byte 8, checked separately)
+}
+
+async function matchesDeclaredType(file: File): Promise<boolean> {
+  const signature = MAGIC_BYTES[file.type]
+  if (!signature) return false
+
+  const header = new Uint8Array(await file.slice(0, 12).arrayBuffer())
+  const signatureMatches = signature.every((byte, index) => header[index] === byte)
+  if (!signatureMatches) return false
+
+  if (file.type === "image/webp") {
+    const webpMarker = String.fromCharCode(...header.slice(8, 12))
+    return webpMarker === "WEBP"
+  }
+
+  return true
+}
+
+async function validateImageFile(file: File): Promise<string | null> {
   if (file.size === 0) return "Nenhum arquivo selecionado."
   if (file.size > MAX_FILE_SIZE_BYTES) return "A imagem deve ter no máximo 5MB."
   if (!(file.type in EXTENSION_BY_MIME_TYPE)) return "Formato inválido. Envie PNG, JPG ou WebP."
+  if (!(await matchesDeclaredType(file))) return "O arquivo não é uma imagem válida no formato declarado."
   return null
 }
 
@@ -37,7 +66,7 @@ export async function uploadCaseImage(
   caseId: string,
   file: File
 ): Promise<UploadCaseImageResult> {
-  const validationError = validateImageFile(file)
+  const validationError = await validateImageFile(file)
   if (validationError) return { ok: false, error: validationError }
 
   const extension = EXTENSION_BY_MIME_TYPE[file.type]
