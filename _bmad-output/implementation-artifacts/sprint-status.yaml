@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-24-2026 00:58
-last_updated: 09-24-2026 19:10
+last_updated: 09-24-2026 19:17
 project: V_TECH_
 project_key: NOKEY
 tracking_system: file-system
@@ -68,6 +68,6 @@ development_status:
   5-1-cadastro-de-projetos-internos: review
   5-2-registro-de-lançamentos-financeiros: review
   5-3-saldo-financeiro-do-período: review
-  5-4-gráficos-do-dashboard-financeiro: backlog
+  5-4-gráficos-do-dashboard-financeiro: review
   5-5-lucro-por-projeto: backlog
   epic-5-retrospective: optional

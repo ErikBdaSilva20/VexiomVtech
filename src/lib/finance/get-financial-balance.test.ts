@@ -1,12 +1,13 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { getFinancialBalance } from "./get-financial-balance"
-import { localDateString } from "@/lib/leads/sao-paulo-time"
 
 function mockClient(pages: { data: unknown[] | null; error: unknown }[]) {
   const range = vi.fn()
   for (const page of pages) range.mockResolvedValueOnce(page)
-  const lte = vi.fn().mockReturnValue({ range })
+  const orderId = vi.fn().mockReturnValue({ range })
+  const orderOccurredAt = vi.fn().mockReturnValue({ order: orderId })
+  const lte = vi.fn().mockReturnValue({ order: orderOccurredAt })
   const gte = vi.fn().mockReturnValue({ lte })
   const select = vi.fn().mockReturnValue({ gte })
   const from = vi.fn().mockReturnValue({ select })
@@ -15,48 +16,16 @@ function mockClient(pages: { data: unknown[] | null; error: unknown }[]) {
 }
 
 describe("getFinancialBalance", () => {
-  it("defaults to the current calendar month (1st through today) when no period is given", async () => {
+  it("queries the resolved period bounds", async () => {
     const { from, gte, lte } = mockClient([{ data: [], error: null }])
-    const supabase = { from } as never
-
-    const result = await getFinancialBalance(supabase, {})
-
-    const today = localDateString(new Date())
-    const [year, month] = today.split("-")
-    expect(result.from).toBe(`${year}-${month}-01`)
-    expect(result.to).toBe(today)
-    expect(gte).toHaveBeenCalledWith("occurred_at", result.from)
-    expect(lte).toHaveBeenCalledWith("occurred_at", result.to)
-  })
-
-  it("uses the explicit from/to bounds when both are given", async () => {
-    const { from } = mockClient([{ data: [], error: null }])
     const supabase = { from } as never
 
     const result = await getFinancialBalance(supabase, { from: "2026-01-01", to: "2026-01-31" })
 
     expect(result.from).toBe("2026-01-01")
     expect(result.to).toBe("2026-01-31")
-  })
-
-  it("defaults to (given day) through today when only from is given", async () => {
-    const { from } = mockClient([{ data: [], error: null }])
-    const supabase = { from } as never
-
-    const result = await getFinancialBalance(supabase, { from: "2026-01-01" })
-
-    expect(result.from).toBe("2026-01-01")
-    expect(result.to).toBe(localDateString(new Date()))
-  })
-
-  it("defaults from to the 1st of to's month when only to is given", async () => {
-    const { from } = mockClient([{ data: [], error: null }])
-    const supabase = { from } as never
-
-    const result = await getFinancialBalance(supabase, { to: "2026-03-15" })
-
-    expect(result.from).toBe("2026-03-01")
-    expect(result.to).toBe("2026-03-15")
+    expect(gte).toHaveBeenCalledWith("occurred_at", "2026-01-01")
+    expect(lte).toHaveBeenCalledWith("occurred_at", "2026-01-31")
   })
 
   it("sums income and expense separately and computes the balance", async () => {
@@ -130,7 +99,7 @@ describe("getFinancialBalance", () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 
     await expect(getFinancialBalance(supabase, {})).rejects.toThrow(
-      "Não foi possível carregar o saldo financeiro."
+      "Não foi possível carregar os lançamentos financeiros."
     )
     consoleSpy.mockRestore()
   })
