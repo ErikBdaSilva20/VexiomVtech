@@ -210,6 +210,28 @@ type FinancialTransactionsInsert = {
 }
 type FinancialTransactionsUpdate = Partial<FinancialTransactionsInsert>
 
+type ContractsRow = {
+  id: string
+  lead_id: string
+  service_types: string[]
+  amount: number
+  hours: number | null
+  file_object_path: string | null
+  created_by: string
+  created_at: string
+}
+type ContractsInsert = {
+  id?: string
+  lead_id: string
+  service_types: string[]
+  amount: number
+  hours?: number | null
+  file_object_path?: string | null
+  created_by: string
+  created_at?: string
+}
+type ContractsUpdate = Partial<ContractsInsert>
+
 // `Relationships` (foreign-key metadata for embedded `select()` queries) and
 // the schema-level `Views`/`Functions` maps are required by supabase-js's
 // `GenericTable`/`GenericSchema` constraints even when unused — left empty
@@ -257,6 +279,12 @@ export type Database = {
         Row: FinancialTransactionsRow
         Insert: FinancialTransactionsInsert
         Update: FinancialTransactionsUpdate
+        Relationships: []
+      }
+      contracts: {
+        Row: ContractsRow
+        Insert: ContractsInsert
+        Update: ContractsUpdate
         Relationships: []
       }
     }

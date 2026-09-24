@@ -37,3 +37,9 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-5-1-cadastro-de-projetos-internos.md`
   summary: Consider auto-clearing `projects.finished_at` when a `concluido` project's status is moved back to `em_andamento`/`cancelado`.
   evidence: Blind Hunter review — currently the field is left stale (still shows the old completion date) after reopening a project; no AC requires this, and it's a debatable UX call (admin can already edit the field directly), so deferred rather than patched.
+- source_spec: `_bmad-output/implementation-artifacts/spec-contratos-cadastro-e-upload-encriptado.md`
+  summary: Download/decrypt endpoint for the attached contract file, plus a `contract_access_log` table recording who opened/downloaded it and when.
+  evidence: Multi-goal split — cadastro (this spec) is independently shippable and already large (migration + storage + crypto + domain layer). Download+log is its own deliverable, gated on super_admin, that reads the file this spec writes. Do next, since the file is useless without a way to read it back.
+- source_spec: `_bmad-output/implementation-artifacts/spec-contratos-cadastro-e-upload-encriptado.md`
+  summary: Listing/history query surfacing all registered contracts (metadata in clear text) for super_admins.
+  evidence: Multi-goal split — independently shippable read-side deliverable, depends only on the `contracts` table from this spec, not on the download/log story.
