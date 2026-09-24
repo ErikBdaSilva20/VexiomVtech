@@ -3,8 +3,8 @@ import { z } from "zod"
 // Upper bound on any single field, chosen to absorb a legitimate free-text
 // answer while rejecting a multi-MB payload — the request body itself has
 // no size cap otherwise, since Next.js Route Handlers don't impose one.
-const MAX_SHORT_TEXT = 200
-const MAX_LONG_TEXT = 5000
+export const MAX_SHORT_TEXT = 200
+export const MAX_LONG_TEXT = 5000
 
 // Optional lead fields are free text from the public form (no closed
 // taxonomy documented for project_type/budget_range/etc. at the DB level —
