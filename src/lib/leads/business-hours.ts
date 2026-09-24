@@ -1,14 +1,11 @@
+import { MS_PER_DAY, MS_PER_HOUR, SAO_PAULO_OFFSET_MS } from "@/lib/leads/sao-paulo-time"
+
 /**
  * Business-hours arithmetic for FR22 (SLA alert): Mon-Fri, 09:00-18:00,
- * America/Sao_Paulo. Brazil has used a fixed UTC-3 offset with no DST since
- * 2019, so a constant offset is correct here — revisit if that ever
- * changes (or if the business expands to a DST-observing region).
+ * America/Sao_Paulo.
  */
-const TIMEZONE_OFFSET_MS = -3 * 60 * 60 * 1000
 const BUSINESS_START_HOUR = 9
 const BUSINESS_END_HOUR = 18
-const MS_PER_HOUR = 60 * 60 * 1000
-const MS_PER_DAY = 24 * MS_PER_HOUR
 
 function isBusinessWeekday(localMidnightMs: number): boolean {
   const day = new Date(localMidnightMs).getUTCDay()
@@ -22,8 +19,8 @@ function isBusinessWeekday(localMidnightMs: number): boolean {
 export function businessHoursElapsed(from: Date, to: Date): number {
   if (to.getTime() <= from.getTime()) return 0
 
-  const shiftedFrom = from.getTime() + TIMEZONE_OFFSET_MS
-  const shiftedTo = to.getTime() + TIMEZONE_OFFSET_MS
+  const shiftedFrom = from.getTime() + SAO_PAULO_OFFSET_MS
+  const shiftedTo = to.getTime() + SAO_PAULO_OFFSET_MS
 
   let totalMs = 0
   let dayStart = Math.floor(shiftedFrom / MS_PER_DAY) * MS_PER_DAY
