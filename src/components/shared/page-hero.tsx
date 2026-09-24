@@ -14,15 +14,15 @@ interface PageHeroProps {
  */
 export function PageHero({ eyebrow, title, description }: PageHeroProps) {
   return (
-    <header className="pt-[calc(70*var(--unit))] px-[calc(94*var(--unit))] pb-[calc(40*var(--unit))] border-b border-b-[#292b29]">
+    <header className="border-b border-b-[#292b29] px-5 pb-10 pt-12 sm:px-8 lg:px-[calc(94*var(--unit))] lg:pb-[calc(40*var(--unit))] lg:pt-[calc(70*var(--unit))]">
       <p className="flex items-center gap-[calc(18*var(--unit))] text-[#bcbcc3] text-[calc(10.5*var(--unit))] font-[550] tracking-[0.23em] uppercase before:content-[''] before:w-[calc(30*var(--unit))] before:h-[calc(5*var(--unit))] before:flex-none before:bg-vexiom-yellow">
         {eyebrow}
       </p>
-      <h1 className="mt-[calc(16*var(--unit))] text-[calc(44*var(--unit))] font-[800] leading-[1.05] tracking-[-0.04em]">
+      <h1 className="mt-[calc(16*var(--unit))] break-words text-[clamp(30px,4vw,44px)] font-[800] leading-[1.08] tracking-[-0.04em]">
         {title}
       </h1>
       {description && (
-        <p className="max-w-[calc(560*var(--unit))] mt-[calc(18*var(--unit))] text-vexiom-gray-medium text-[calc(15*var(--unit))] font-[450] leading-[calc(22*var(--unit))] tracking-[-0.035em]">
+        <p className="mt-[calc(18*var(--unit))] max-w-[calc(560*var(--unit))] text-sm leading-6 text-vexiom-gray-medium sm:text-[calc(15*var(--unit))] sm:leading-[calc(22*var(--unit))]">
           {description}
         </p>
       )}

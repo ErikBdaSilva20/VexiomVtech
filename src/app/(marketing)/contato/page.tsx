@@ -18,7 +18,7 @@ export default function ContatoPage() {
         description="Responda algumas perguntas rápidas e entraremos em contato para entender o seu cenário."
       />
       <section
-        className="py-[calc(50*var(--unit))] px-[calc(94*var(--unit))]"
+        className="py-[calc(50*var(--unit))] px-[calc(94*var(--unit))] [@media(max-width:650px)]:px-[24px]"
         aria-label="Formulário de contato"
       >
         <ContactForm />
