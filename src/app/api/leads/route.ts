@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { findDuplicateLeadId } from "@/lib/leads/duplicate-detection"
 import { publicLeadSchema } from "@/lib/leads/lead-schema"
 import { createAdminClient } from "@/lib/supabase/admin"
 
@@ -7,8 +8,6 @@ import { createAdminClient } from "@/lib/supabase/admin"
  * Public lead intake (FR4/FR5). Writes with the service-role client because
  * `leads` has no anonymous insert RLS policy by design (NFR3) — this
  * endpoint is the only path a visitor's payload can turn into a row.
- * Duplicate detection (`possible_duplicate_of`, story 2.2) is not applied
- * yet; every lead is inserted as-is.
  */
 export async function POST(request: Request) {
   let body: unknown
@@ -31,9 +30,14 @@ export async function POST(request: Request) {
   try {
     const supabase = createAdminClient()
 
+    const possibleDuplicateOf = await findDuplicateLeadId(supabase, {
+      email: parsed.data.email,
+      whatsapp: parsed.data.whatsapp,
+    })
+
     const { data, error } = await supabase
       .from("leads")
-      .insert({ ...parsed.data, source: "site" })
+      .insert({ ...parsed.data, source: "site", possible_duplicate_of: possibleDuplicateOf })
       .select("id")
       .single()
 

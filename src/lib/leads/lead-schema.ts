@@ -32,7 +32,8 @@ export const publicLeadSchema = z.object({
     .trim()
     .min(1, "E-mail é obrigatório.")
     .max(MAX_SHORT_TEXT)
-    .email("E-mail inválido."),
+    .email("E-mail inválido.")
+    .toLowerCase(),
   whatsapp: z.string().trim().min(1, "WhatsApp é obrigatório.").max(MAX_SHORT_TEXT),
   project_type: z.string().trim().min(1, "Tipo de projeto é obrigatório.").max(MAX_SHORT_TEXT),
   description: z.string().trim().min(1, "Descrição é obrigatória.").max(MAX_LONG_TEXT),

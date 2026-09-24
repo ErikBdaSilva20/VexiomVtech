@@ -22,19 +22,45 @@ function jsonRequest(body: unknown) {
   })
 }
 
+type DuplicateMatch = { id: string; created_at: string } | null
+
 function mockAdminClient({
   singleResult,
+  duplicateByEmail = null,
+  duplicateByWhatsapp = null,
 }: {
   singleResult: { data: { id: string } | null; error: unknown }
+  duplicateByEmail?: DuplicateMatch
+  duplicateByWhatsapp?: DuplicateMatch
 }) {
   const single = vi.fn().mockResolvedValue(singleResult)
-  const select = vi.fn().mockReturnValue({ single })
-  const insert = vi.fn().mockReturnValue({ select })
-  const from = vi.fn().mockReturnValue({ insert })
+  const insertSelect = vi.fn().mockReturnValue({ single })
+  const insert = vi.fn().mockReturnValue({ select: insertSelect })
+
+  const from = vi.fn().mockImplementation(() => {
+    let field: "email" | "whatsapp" | undefined
+
+    const duplicateQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockImplementation((column: "email" | "whatsapp") => {
+        field = column
+        return duplicateQuery
+      }),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockImplementation(async () => ({
+        data: field === "email" ? duplicateByEmail : duplicateByWhatsapp,
+        error: null,
+      })),
+      insert,
+    }
+
+    return duplicateQuery
+  })
 
   vi.mocked(createAdminClient).mockReturnValue({ from } as never)
 
-  return { from, insert, select, single }
+  return { from, insert, insertSelect, single }
 }
 
 describe("POST /api/leads", () => {
@@ -51,7 +77,23 @@ describe("POST /api/leads", () => {
     expect(response.status).toBe(201)
     expect(json).toEqual({ id: "lead-1" })
     expect(from).toHaveBeenCalledWith("leads")
-    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ ...validPayload, source: "site" }))
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({ ...validPayload, source: "site", possible_duplicate_of: null })
+    )
+  })
+
+  it("sets possible_duplicate_of to the oldest matching lead's id", async () => {
+    const { insert } = mockAdminClient({
+      singleResult: { data: { id: "lead-2" }, error: null },
+      duplicateByEmail: { id: "lead-original", created_at: "2026-01-01T00:00:00Z" },
+    })
+
+    const response = await POST(jsonRequest(validPayload))
+
+    expect(response.status).toBe(201)
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({ possible_duplicate_of: "lead-original" })
+    )
   })
 
   it("returns 400 for malformed JSON without touching the database", async () => {
@@ -86,6 +128,23 @@ describe("POST /api/leads", () => {
 
     expect(response.status).toBe(500)
     expect(json.error).not.toMatch(/db exploded/)
+  })
+
+  it("returns 500 with a generic message when the duplicate check throws unexpectedly", async () => {
+    const from = vi.fn().mockImplementation(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockRejectedValue(new Error("network error")),
+    }))
+    vi.mocked(createAdminClient).mockReturnValue({ from } as never)
+
+    const response = await POST(jsonRequest(validPayload))
+    const json = await response.json()
+
+    expect(response.status).toBe(500)
+    expect(json.error).not.toMatch(/network error/)
   })
 
   it("returns 500 with a generic message when creating the admin client throws", async () => {
