@@ -4,8 +4,11 @@
 -- or `psql` against the project's connection string). Going forward, do NOT
 -- edit this file for incremental changes — add a new numbered file under
 -- `supabase/migrations/` instead (see supabase/migrations/README convention
--- described in the Epic 1 spec). This file and migration 0001 are kept in
--- sync by hand for the initial schema only.
+-- described in the Epic 1 spec) and fold it in here by hand too, so this
+-- file always represents the full current schema in one paste-and-run shot.
+-- Kept in sync by hand with every migration under `supabase/migrations/`
+-- (currently 0001-0006) — see `supabase/migrations.sql` for the same
+-- content in strict migration-file order, auto-generated via `pnpm db:migrations`.
 --
 -- Idempotent: safe to re-run against a project where it (or part of it) has
 -- already been applied — every statement either uses IF NOT EXISTS/OR
@@ -179,6 +182,26 @@ create table if not exists public.contract_access_log (
 
 create index if not exists contract_access_log_contract_id_idx on public.contract_access_log (contract_id);
 
+-- leads.status has no enum/check constraint in the `create table` above (kept
+-- as-is for parity with `0001_initial_schema.sql`) — this adds the DB-level
+-- backstop, same as `0003_leads_status_check_constraint.sql`. Drop-then-add
+-- (no `ADD CONSTRAINT IF NOT EXISTS` in Postgres) keeps this idempotent.
+alter table public.leads drop constraint if exists leads_status_check;
+alter table public.leads add constraint leads_status_check check (
+  status in (
+    'novo_lead',
+    'em_analise',
+    'primeiro_contato_realizado',
+    'conversa_agendada',
+    'proposta_em_preparacao',
+    'proposta_enviada',
+    'follow_up_pendente',
+    'contrato_fechado',
+    'nao_convertido',
+    'em_suporte_continuo'
+  )
+);
+
 -- ---------------------------------------------------------------------------
 -- app_current_role(): SECURITY DEFINER helper used inside RLS policies of other
 -- tables. Reading admin_users directly inside a policy on admin_users itself
@@ -251,6 +274,27 @@ create or replace trigger trg_lead_interactions_set_last_interaction_at
   for each row
   execute function public.set_lead_last_interaction_at();
 
+-- Story 4.1: `cases.updated_at` defaults to `now()` on insert but nothing
+-- refreshes it on UPDATE — auto-touch it in the DB so it stays correct no
+-- matter which future write path updates a case.
+create or replace function public.set_cases_updated_at()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_cases_set_updated_at on public.cases;
+create trigger trg_cases_set_updated_at
+  before update on public.cases
+  for each row
+  execute function public.set_cases_updated_at();
+
 -- ---------------------------------------------------------------------------
 -- Row Level Security ("Segurança (RLS)", doc 08 lines 151-164)
 --
@@ -280,6 +324,13 @@ drop policy if exists "leads_select_admins" on public.leads;
 create policy "leads_select_admins"
   on public.leads for select
   using (app_current_role() in ('super_admin', 'employer'));
+
+-- Story 2.3: manual lead entry by an authenticated admin, matching the
+-- pattern already used for lead_interactions/lead_meetings insert policies.
+drop policy if exists "leads_insert_admins" on public.leads;
+create policy "leads_insert_admins"
+  on public.leads for insert
+  with check (app_current_role() in ('super_admin', 'employer'));
 
 drop policy if exists "leads_update_admins" on public.leads;
 create policy "leads_update_admins"
