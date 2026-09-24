@@ -10,7 +10,7 @@ export function HeroContent() {
       </p>
       <h1
         id="hero-title"
-        className="mt-[calc(20*var(--unit))] text-[calc(70*var(--unit))] font-extrabold leading-[0.93] tracking-[-0.067em] translate-y-[calc(4*var(--unit))] [@media(max-width:1100px)]:text-[clamp(53px,6.3vw,66px)] [@media(max-width:650px)]:mt-[27px] [@media(max-width:650px)]:text-[clamp(35px,8.55vw,53px)] [@media(max-width:650px)]:leading-[1] [@media(max-width:650px)]:tracking-[-0.065em] [@media(max-width:360px)]:text-[32px]"
+        className="mt-[calc(26*var(--unit))] text-[calc(70*var(--unit))] font-extrabold leading-[0.93] tracking-[-0.067em] translate-y-[calc(4*var(--unit))] [@media(max-width:1100px)]:text-[clamp(53px,6.3vw,66px)] [@media(max-width:650px)]:mt-[34px] [@media(max-width:650px)]:text-[clamp(35px,8.55vw,53px)] [@media(max-width:650px)]:leading-[1] [@media(max-width:650px)]:tracking-[-0.065em] [@media(max-width:360px)]:text-[32px]"
       >
         <span className="block w-fit whitespace-nowrap bg-[linear-gradient(#fff_18%,#dedfe7_88%)] bg-clip-text [-webkit-text-fill-color:transparent] origin-left scale-x-[0.975]">
           Tecnologia
@@ -22,7 +22,7 @@ export function HeroContent() {
           acelerar negócios.
         </span>
       </h1>
-      <p className="mt-[calc(25*var(--unit))] mr-0 mb-0 ml-[calc(2*var(--unit))] text-vexiom-gray-medium text-[calc(15*var(--unit))] font-[450] leading-[calc(22*var(--unit))] tracking-[-0.035em] [@media(max-width:1100px)]:mt-[26px] [@media(max-width:1100px)]:text-[14px] [@media(max-width:1100px)]:leading-[22px] [@media(max-width:650px)]:mt-[24px] [@media(max-width:650px)]:ml-0 [@media(max-width:650px)]:text-[12px] [@media(max-width:650px)]:leading-[1.8] [@media(max-width:650px)]:[&_br]:hidden">
+      <p className="mt-[calc(32*var(--unit))] mr-0 mb-0 ml-[calc(2*var(--unit))] text-vexiom-gray-medium text-[calc(15*var(--unit))] font-[450] leading-[calc(22*var(--unit))] tracking-[-0.035em] [@media(max-width:1100px)]:mt-[32px] [@media(max-width:1100px)]:text-[14px] [@media(max-width:1100px)]:leading-[22px] [@media(max-width:650px)]:mt-[30px] [@media(max-width:650px)]:ml-0 [@media(max-width:650px)]:text-[12px] [@media(max-width:650px)]:leading-[1.8] [@media(max-width:650px)]:[&_br]:hidden">
         Sites, sistemas, lojas online e automações com IA
         <br />
         desenvolvidos a partir do que você realmente precisa.

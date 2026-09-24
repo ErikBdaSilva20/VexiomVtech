@@ -7,7 +7,7 @@ import { RESOLUTIONS } from "@/data/home-content"
 export function ResolutionsSection() {
   return (
     <section
-      className="relative overflow-hidden border-t border-t-[#343632] [background:linear-gradient(104deg,#10120f_0%,#0b0c0b_61%,#15150f_100%)] before:content-[''] before:absolute before:top-0 before:right-[calc(7*var(--unit))] before:w-[min(36vw,calc(570*var(--unit)))] before:h-full before:border-r before:border-r-[#fbd02010] before:border-l before:border-l-[#fbd0200b] before:[clip-path:polygon(24%_0,100%_0,76%_100%,0_100%)] before:pointer-events-none [@media(max-width:650px)]:before:right-[-90px] [@media(max-width:650px)]:before:w-[75vw]"
+      className="relative overflow-hidden [background:linear-gradient(104deg,#10120f_0%,#0b0c0b_61%,#15150f_100%)] before:content-[''] before:absolute before:top-0 before:right-[calc(7*var(--unit))] before:w-[min(36vw,calc(570*var(--unit)))] before:h-full before:border-r before:border-r-[#fbd02010] before:border-l before:border-l-[#fbd0200b] before:[clip-path:polygon(24%_0,100%_0,76%_100%,0_100%)] before:pointer-events-none [@media(max-width:650px)]:before:right-[-90px] [@media(max-width:650px)]:before:w-[75vw]"
       id="o-que-resolvemos"
       aria-labelledby="resolutions-title"
     >
@@ -18,13 +18,13 @@ export function ResolutionsSection() {
           </p>
           <h2
             id="resolutions-title"
-            className="mt-[calc(22*var(--unit))] text-[#f4f4f2] text-[calc(42*var(--unit))] font-[760] leading-[1.03] tracking-[-0.06em] [@media(max-width:1100px)]:text-[36px] [@media(max-width:650px)]:mt-[18px] [@media(max-width:650px)]:text-[33px] [@media(max-width:360px)]:text-[29px]"
+            className="mt-[calc(28*var(--unit))] text-[#f4f4f2] text-[calc(42*var(--unit))] font-[760] leading-[1.03] tracking-[-0.06em] [@media(max-width:1100px)]:text-[36px] [@media(max-width:650px)]:mt-[24px] [@media(max-width:650px)]:text-[33px] [@media(max-width:360px)]:text-[29px]"
           >
             Tecnologia que melhora
             <br />
             <span className="text-vexiom-yellow">o que importa.</span>
           </h2>
-          <p className="max-w-[calc(385*var(--unit))] mt-[calc(24*var(--unit))] text-[#afb1ae] text-[calc(15*var(--unit))] leading-[1.6] [@media(max-width:650px)]:mt-[18px] [@media(max-width:650px)]:text-[14px]">
+          <p className="max-w-[calc(385*var(--unit))] mt-[calc(32*var(--unit))] text-[#afb1ae] text-[calc(15*var(--unit))] leading-[1.6] [@media(max-width:650px)]:mt-[24px] [@media(max-width:650px)]:text-[14px]">
             Cada projeto começa pelo ponto que está impedindo seu negócio de
             avançar — não por uma solução pronta ou tecnologia da moda.
           </p>

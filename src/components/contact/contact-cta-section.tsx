@@ -15,13 +15,13 @@ export function ContactCtaSection() {
         </p>
         <h2
           id="contact-cta-title"
-          className="mt-[calc(22*var(--unit))] text-[#f4f4f2] text-[calc(38*var(--unit))] font-[760] leading-[1.08] tracking-[-0.06em] [@media(max-width:1100px)]:text-[32px] [@media(max-width:650px)]:mt-[18px] [@media(max-width:650px)]:text-[27px] [@media(max-width:360px)]:text-[24px]"
+          className="mt-[calc(28*var(--unit))] text-[#f4f4f2] text-[calc(38*var(--unit))] font-[760] leading-[1.08] tracking-[-0.06em] [@media(max-width:1100px)]:text-[32px] [@media(max-width:650px)]:mt-[24px] [@media(max-width:650px)]:text-[27px] [@media(max-width:360px)]:text-[24px]"
         >
           Pronto para colocar seu projeto
           <br />
           <span className="text-vexiom-yellow">em movimento?</span>
         </h2>
-        <p className="max-w-[calc(480*var(--unit))] mt-[calc(20*var(--unit))] mx-auto text-[#afb1ae] text-[calc(15*var(--unit))] leading-[1.6] [@media(max-width:650px)]:mt-[16px] [@media(max-width:650px)]:text-[14px]">
+        <p className="max-w-[calc(480*var(--unit))] mt-[calc(28*var(--unit))] mx-auto text-[#afb1ae] text-[calc(15*var(--unit))] leading-[1.6] [@media(max-width:650px)]:mt-[22px] [@media(max-width:650px)]:text-[14px]">
           Entendemos o problema na raiz e criamos soluções digitais sob
           medida, simples de usar e acompanhadas de perto do início ao
           suporte.

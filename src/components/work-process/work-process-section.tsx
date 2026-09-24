@@ -16,13 +16,13 @@ export function WorkProcessSection() {
           </p>
           <h2
             id="work-process-title"
-            className="mt-[calc(16*var(--unit))] text-[calc(32*var(--unit))] font-[750] leading-[1.08] tracking-[-0.05em] [@media(max-width:1100px)]:text-[26px] [@media(max-width:650px)]:text-[22px]"
+            className="mt-[calc(22*var(--unit))] text-[calc(32*var(--unit))] font-[750] leading-[1.08] tracking-[-0.05em] [@media(max-width:1100px)]:text-[26px] [@media(max-width:650px)]:text-[22px]"
           >
             Um processo claro,
             <br />
             <span className="text-vexiom-yellow">do início ao suporte.</span>
           </h2>
-          <p className="mt-[calc(18*var(--unit))] text-vexiom-gray-medium text-[calc(15*var(--unit))] leading-[calc(22*var(--unit))] [@media(max-width:650px)]:text-[13px]">
+          <p className="mt-[calc(26*var(--unit))] text-vexiom-gray-medium text-[calc(15*var(--unit))] leading-[calc(22*var(--unit))] [@media(max-width:650px)]:text-[13px]">
             Sem etapas escondidas: você acompanha cada decisão, do primeiro
             contato até o suporte depois da entrega.
           </p>

@@ -8,85 +8,56 @@ import { HEADER_CTA, NAV_ITEMS } from "@/data/home-content"
 import { PrimaryNav } from "@/components/primary-nav"
 import { ArrowLink } from "@/components/shared/arrow-link"
 
+const HEADER_HEIGHT_CLASSES = "h-[calc(64*var(--unit))] [@media(max-width:1100px)]:h-[64px] [@media(max-width:650px)]:h-[64px] [@media(max-width:360px)]:h-[52px]"
+
 /**
- * Header bar: desktop nav, centered brand mark, CTA, and a native
- * <details>-based mobile menu whose open/close behaviour is an exact port
- * of home-reference.html's vanilla script — opens via the browser's
- * default <summary> toggle, closes on link click (focus returns to the
- * trigger), Escape, outside click, or resize to ≥1101px.
- *
- * The header also pins itself to the viewport once the page scrolls past
- * its own height, sliding down into place, and un-pins again on the way
- * back — so the slide-in replays every time the threshold is crossed
- * going down, not just once per page load.
- *
- * The slide is a CSS *transition* on transform, not a keyframe animation:
- * the header mounts as fixed + translated off-screen first (an instant,
- * invisible change — nothing to animate yet), then a two-frame rAF delay
- * flips it to translate-y-0 so the transition has a real "from" value to
- * interpolate. A keyframe animation restarts from its hardcoded 0% every
- * time the class is reapplied, which snaps instead of easing if isPinned
- * flips again before the previous run finished (e.g. fast scroll wobble
- * right at the threshold) — the transition version just reverses smoothly
- * from wherever it currently is.
+ * Keep the same header/menu in the DOM when pinning. CSS keyframes give
+ * the fixed header an off-screen first frame without a reveal render or
+ * a transition that accidentally animates the move INTO the hidden state.
+ * Unpinning removes the animation immediately; only a new pin replays it.
  */
 export function SiteHeader() {
   const menuRef = useRef<HTMLDetailsElement>(null)
   const triggerRef = useRef<HTMLElement>(null)
   const headerRef = useRef<HTMLElement>(null)
-  const headerHeightRef = useRef(0)
   const [isPinned, setIsPinned] = useState(false)
-  const [isRevealed, setIsRevealed] = useState(false)
-  const [headerHeight, setHeaderHeight] = useState(0)
 
   useEffect(() => {
-    if (!headerRef.current) return
-    headerHeightRef.current = headerRef.current.offsetHeight
-    setHeaderHeight(headerRef.current.offsetHeight)
-  }, [])
+    const header = headerRef.current
+    if (!header) return
 
-  useEffect(() => {
-    if (!isPinned) {
-      const id = requestAnimationFrame(() => setIsRevealed(false))
-      return () => cancelAnimationFrame(id)
-    }
-    // React already committed the "hidden" (-translate-y-full) class to the
-    // DOM by the time this effect runs. Reading offsetHeight forces the
-    // browser to flush that style synchronously (a standard reflow-forcing
-    // trick) before we flip to "revealed" one frame later — this is what
-    // guarantees the transition has a real starting value to animate from.
-    // A plain double-rAF (no forced reflow) isn't reliable here: under the
-    // scroll-linked main-thread pressure this code runs under, Chromium can
-    // coalesce both rAF callbacks into a single frame, which skips the
-    // transition entirely and makes the header snap instead of sliding.
-    const node = headerRef.current
-    if (node) void node.offsetHeight
-    const raf = requestAnimationFrame(() => setIsRevealed(true))
-    return () => cancelAnimationFrame(raf)
-  }, [isPinned])
-
-  useEffect(() => {
-    // A small gap between the pin/unpin thresholds avoids rapid toggling
-    // (and re-triggering the entrance animation) while the scroll position
-    // sits right at the boundary.
+    // Hysteresis prevents repeated entrances while scrolling near the edge.
     const UNPIN_MARGIN = 24
-    let ticking = false
+    let pinned = false
+    let frame = 0
+
+    function updatePinned() {
+      frame = 0
+      const threshold = header!.getBoundingClientRect().height
+      const nextPinned = window.scrollY > threshold - (pinned ? UNPIN_MARGIN : 0)
+      if (nextPinned === pinned) return
+
+      if (nextPinned) {
+        // scrollHeight includes the hanging logo, notch and any open menu.
+        // One extra pixel clears the SVG stroke, without an oversized slide.
+        header!.style.setProperty("--header-entry-offset", `${-header!.scrollHeight - 1}px`)
+      }
+      pinned = nextPinned
+      setIsPinned(nextPinned)
+    }
 
     function handleScroll() {
-      if (ticking) return
-      ticking = true
-      requestAnimationFrame(() => {
-        const threshold = headerHeightRef.current
-        setIsPinned((wasPinned) => {
-          if (wasPinned) return window.scrollY > threshold - UNPIN_MARGIN
-          return window.scrollY > threshold
-        })
-        ticking = false
-      })
+      if (!frame) frame = requestAnimationFrame(updatePinned)
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
+    window.addEventListener("resize", handleScroll)
+    handleScroll()
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("resize", handleScroll)
+      cancelAnimationFrame(frame)
+    }
   }, [])
 
   useEffect(() => {
@@ -137,11 +108,11 @@ export function SiteHeader() {
     <>
       <header
         ref={headerRef}
-        className={
+        className={`site-header ${HEADER_HEIGHT_CLASSES} bg-[linear-gradient(115deg,#101110ed,#090a09f5)] ${
           isPinned
-            ? `site-header fixed top-0 left-0 z-20 w-full h-[calc(64*var(--unit))] bg-[linear-gradient(115deg,#101110ed,#090a09f5)] shadow-[0_calc(10*var(--unit))_calc(30*var(--unit))_#000000b3] transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform [@media(max-width:1100px)]:h-[64px] [@media(max-width:650px)]:h-[64px] [@media(max-width:360px)]:h-[52px] ${isRevealed ? "translate-y-0" : "-translate-y-full"}`
-            : "site-header relative z-[5] h-[calc(64*var(--unit))] bg-[linear-gradient(115deg,#101110ed,#090a09f5)] [@media(max-width:1100px)]:h-[64px] [@media(max-width:650px)]:h-[64px] [@media(max-width:360px)]:h-[52px]"
-        }
+            ? "fixed top-0 left-0 z-20 w-full shadow-[0_calc(10*var(--unit))_calc(30*var(--unit))_#000000b3] animate-[header-enter_1000ms_ease-in-out_both] will-change-transform"
+            : "relative z-[5]"
+        }`}
       >
         <div
           className="absolute top-full left-0 w-full h-[calc(48*var(--unit))] bg-[#0a0b0a] [clip-path:polygon(41.6875%_0%,58.3125%_0%,55.3125%_100%,44.6875%_100%)] z-[1] pointer-events-none [@media(max-width:1100px)]:hidden"
@@ -221,8 +192,7 @@ export function SiteHeader() {
       </header>
       {isPinned && (
         <div
-          className="site-header-spacer"
-          style={{ height: headerHeight }}
+          className={`site-header-spacer ${HEADER_HEIGHT_CLASSES}`}
           aria-hidden="true"
         />
       )}

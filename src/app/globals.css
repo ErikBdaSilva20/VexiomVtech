@@ -243,15 +243,16 @@ html {
   width: 100%;
   height: auto;
   pointer-events: none;
-  /* The artwork's own panel shapes end at viewBox y=680 (== header + hero
-   * height in --unit terms); below that it's just a decorative tail meant
-   * to bleed into whatever sits immediately below Hero. That used to be
-   * Services (same dark gradient, so the bleed was invisible); now the
-   * Problems section sits there instead with a flat background, so the
-   * tail is cropped exactly at the section-divider's right-segment height
-   * (680 + 72*tan(20deg) ≈ 706.2 of the 900-tall viewBox) instead of
-   * bleeding past it. */
-  clip-path: inset(0 0 21.53% 0);
+  /* Mirror the first divider exactly: its left segment is at y705, then it
+   * drops 72px at 20deg to y731.2 before continuing to the right. */
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 81.25%,
+    54.5% 81.25%,
+    50% 78.33%,
+    0 78.33%
+  );
 }
 .skip-link {
   position: absolute;
@@ -312,6 +313,15 @@ html {
   }
 }
 
+@keyframes header-enter {
+  from {
+    transform: translateY(var(--header-entry-offset));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -320,12 +330,5 @@ html {
   *::before,
   *::after {
     transition: none !important;
-  }
-  /* Exception: the pinned header's slide-in is functional navigation
-   * feedback (the bar reappearing after scrolling past it), not decorative
-   * motion. Forced to the same 1s timing as the non-reduced-motion case
-   * regardless of the OS/browser preference, per explicit user request. */
-  .site-header {
-    transition: transform 1000ms cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 }
