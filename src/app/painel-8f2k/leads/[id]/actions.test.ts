@@ -4,8 +4,10 @@ import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
 import { createClient } from "@/lib/supabase/server"
 import {
   createLeadInteraction,
+  createLeadMeeting,
   markLeadResponded,
   updateLeadAssignee,
+  updateLeadMeetingStatus,
   updateLeadNextAction,
   updateLeadNonConversionReason,
   updateLeadProbability,
@@ -696,5 +698,187 @@ describe("updateLeadAssignee", () => {
     )
 
     expect(result).toEqual({ status: "error", error: "Não foi possível salvar o responsável. Tente novamente." })
+  })
+})
+
+describe("createLeadMeeting", () => {
+  beforeEach(() => {
+    vi.mocked(getCurrentAdmin).mockReset()
+    vi.mocked(createClient).mockReset()
+  })
+
+  it("returns an error and does not touch the DB when unauthenticated", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue(null)
+
+    const result = await createLeadMeeting(
+      undefined,
+      qualificationFormData({ lead_id: validLeadId, scheduled_at: "2026-10-01T14:00:00Z" })
+    )
+
+    expect(result).toEqual({ status: "error", error: expect.any(String) })
+    expect(createClient).not.toHaveBeenCalled()
+  })
+
+  it("creates a meeting with the given schedule and notes", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    const { insert } = mockSessionClient({ data: { id: "meeting-1" }, error: null })
+
+    const result = await createLeadMeeting(
+      undefined,
+      qualificationFormData({
+        lead_id: validLeadId,
+        scheduled_at: "2026-10-01T14:00:00Z",
+        notes: "Kickoff",
+      })
+    )
+
+    expect(result).toEqual({ status: "success", id: "meeting-1" })
+    expect(insert).toHaveBeenCalledWith({
+      lead_id: validLeadId,
+      scheduled_at: "2026-10-01T14:00:00Z",
+      notes: "Kickoff",
+    })
+  })
+
+  it("never sends a status — the DB default (agendada) applies", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    const { insert } = mockSessionClient({ data: { id: "meeting-1" }, error: null })
+
+    await createLeadMeeting(
+      undefined,
+      qualificationFormData({ lead_id: validLeadId, scheduled_at: "2026-10-01T14:00:00Z" })
+    )
+
+    expect(insert.mock.calls[0][0]).not.toHaveProperty("status")
+  })
+
+  it("returns a field-level error for a malformed scheduled_at", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+
+    const result = await createLeadMeeting(
+      undefined,
+      qualificationFormData({ lead_id: validLeadId, scheduled_at: "not-a-date" })
+    )
+
+    expect(result?.status).toBe("error")
+    expect(createClient).not.toHaveBeenCalled()
+  })
+
+  it("returns a generic error when the insert fails", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    mockSessionClient({ data: null, error: { message: "RLS denied" } })
+
+    const result = await createLeadMeeting(
+      undefined,
+      qualificationFormData({ lead_id: validLeadId, scheduled_at: "2026-10-01T14:00:00Z" })
+    )
+
+    expect(result).toEqual({ status: "error", error: "Não foi possível agendar a reunião. Tente novamente." })
+  })
+})
+
+const meetingId = "44444444-4444-4444-8444-444444444444"
+
+describe("updateLeadMeetingStatus", () => {
+  beforeEach(() => {
+    vi.mocked(getCurrentAdmin).mockReset()
+    vi.mocked(createClient).mockReset()
+  })
+
+  it("returns an error and does not touch the DB when unauthenticated", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue(null)
+
+    const result = await updateLeadMeetingStatus(
+      undefined,
+      qualificationFormData({ meeting_id: meetingId, status: "realizada", expected_status: "agendada" })
+    )
+
+    expect(result).toEqual({ status: "error", error: expect.any(String) })
+    expect(createClient).not.toHaveBeenCalled()
+  })
+
+  it("rejects agendada as a target status", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+
+    const result = await updateLeadMeetingStatus(
+      undefined,
+      qualificationFormData({ meeting_id: meetingId, status: "agendada", expected_status: "agendada" })
+    )
+
+    expect(result?.status).toBe("error")
+    expect(createClient).not.toHaveBeenCalled()
+  })
+
+  it("marks the meeting realizada when expected_status matches the DB", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    const { update, updateEqId, updateEqStatus } = mockConditionalUpdateClient({
+      updateResult: { data: { id: meetingId }, error: null },
+    })
+
+    const result = await updateLeadMeetingStatus(
+      undefined,
+      qualificationFormData({ meeting_id: meetingId, status: "realizada", expected_status: "agendada" })
+    )
+
+    expect(result).toEqual({ status: "success" })
+    expect(update).toHaveBeenCalledWith({ status: "realizada" })
+    expect(updateEqId).toHaveBeenCalledWith("id", meetingId)
+    expect(updateEqStatus).toHaveBeenCalledWith("status", "agendada")
+  })
+
+  it("marks the meeting cancelada when expected_status matches the DB", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    mockConditionalUpdateClient({ updateResult: { data: { id: meetingId }, error: null } })
+
+    const result = await updateLeadMeetingStatus(
+      undefined,
+      qualificationFormData({ meeting_id: meetingId, status: "cancelada", expected_status: "agendada" })
+    )
+
+    expect(result).toEqual({ status: "success" })
+  })
+
+  it("reports a conflict when another admin already changed the meeting's status", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    mockConditionalUpdateClient({
+      updateResult: { data: null, error: NO_ROWS_ERROR },
+      selectResult: { data: { status: "cancelada" }, error: null },
+    })
+
+    const result = await updateLeadMeetingStatus(
+      undefined,
+      qualificationFormData({ meeting_id: meetingId, status: "realizada", expected_status: "agendada" })
+    )
+
+    expect(result).toEqual({ status: "conflict", currentStatus: "cancelada" })
+  })
+
+  it("returns a generic error when the meeting doesn't exist", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    mockConditionalUpdateClient({
+      updateResult: { data: null, error: NO_ROWS_ERROR },
+      selectResult: { data: null, error: null },
+    })
+
+    const result = await updateLeadMeetingStatus(
+      undefined,
+      qualificationFormData({ meeting_id: meetingId, status: "realizada", expected_status: "agendada" })
+    )
+
+    expect(result).toEqual({ status: "error", error: "Não foi possível atualizar a reunião. Tente novamente." })
+  })
+
+  it("returns a generic error on a real DB failure during the update", async () => {
+    vi.mocked(getCurrentAdmin).mockResolvedValue({ id: "admin-1", role: "employer", name: "A" })
+    mockConditionalUpdateClient({
+      updateResult: { data: null, error: { code: "42501", message: "RLS denied" } },
+    })
+
+    const result = await updateLeadMeetingStatus(
+      undefined,
+      qualificationFormData({ meeting_id: meetingId, status: "realizada", expected_status: "agendada" })
+    )
+
+    expect(result).toEqual({ status: "error", error: "Não foi possível atualizar a reunião. Tente novamente." })
   })
 })

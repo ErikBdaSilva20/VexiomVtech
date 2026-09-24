@@ -5,6 +5,7 @@ import { z } from "zod"
 import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
 import type { LeadStatus } from "@/lib/leads/lead-status"
 import { createLeadInteractionSchema } from "@/lib/leads/lead-interaction-schema"
+import { createLeadMeetingSchema, updateLeadMeetingStatusSchema } from "@/lib/leads/lead-meeting-schema"
 import {
   updateLeadAssigneeSchema,
   updateLeadNextActionSchema,
@@ -15,6 +16,7 @@ import {
 import { updateLeadFields } from "@/lib/leads/update-lead-fields"
 import { updateLeadStatusSchema } from "@/lib/leads/update-lead-status-schema"
 import { createClient } from "@/lib/supabase/server"
+import type { LeadMeetingStatus } from "@/lib/supabase/database.types"
 
 // Supabase's "no rows found" error code for `.single()` — same constant as
 // src/lib/auth/get-current-admin.ts, kept local here since it's a
@@ -69,6 +71,17 @@ export type UpdateLeadNonConversionReasonState =
 export type UpdateLeadAssigneeState =
   | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
   | { status: "conflict"; currentAssignedTo: string | null }
+  | { status: "success" }
+  | undefined
+
+export type CreateLeadMeetingState =
+  | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
+  | { status: "success"; id: string }
+  | undefined
+
+export type UpdateLeadMeetingStatusState =
+  | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
+  | { status: "conflict"; currentStatus: LeadMeetingStatus }
   | { status: "success" }
   | undefined
 
@@ -520,5 +533,134 @@ export async function updateLeadAssignee(
   } catch (error) {
     console.error("updateLeadAssignee: unexpected failure", error)
     return { status: "error", error: "Não foi possível salvar o responsável. Tente novamente." }
+  }
+}
+
+/**
+ * Schedules a meeting for a lead (FR19). `status` is never accepted from
+ * the client — `lead_meetings.status` defaults to `'agendada'` at the DB
+ * level, so this insert leaves it unset.
+ */
+export async function createLeadMeeting(
+  _prevState: CreateLeadMeetingState,
+  formData: FormData
+): Promise<CreateLeadMeetingState> {
+  const admin = await getCurrentAdmin()
+
+  if (!admin) {
+    return { status: "error", error: "Sessão expirada. Faça login novamente." }
+  }
+
+  const parsed = createLeadMeetingSchema.safeParse({
+    lead_id: formData.get("lead_id"),
+    scheduled_at: formData.get("scheduled_at"),
+    notes: nullableFormValue(formData, "notes"),
+  })
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      error: "Dados inválidos.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    }
+  }
+
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from("lead_meetings")
+      .insert({
+        lead_id: parsed.data.lead_id,
+        scheduled_at: parsed.data.scheduled_at,
+        notes: parsed.data.notes,
+      })
+      .select("id")
+      .single()
+
+    if (error) {
+      console.error("createLeadMeeting: failed to insert meeting", error)
+      return { status: "error", error: "Não foi possível agendar a reunião. Tente novamente." }
+    }
+
+    return { status: "success", id: data.id }
+  } catch (error) {
+    console.error("createLeadMeeting: unexpected failure", error)
+    return { status: "error", error: "Não foi possível agendar a reunião. Tente novamente." }
+  }
+}
+
+/**
+ * Marks a meeting as realizada/cancelada (FR19), never back to agendada —
+ * the schema restricts the target `status` accordingly.
+ *
+ * Optimistic concurrency, same posture as `updateLeadStatus`/
+ * `updateLeadAssignee`: two admins acting on the same meeting at once (one
+ * marking it done, another cancelling it) is a real scenario, so the
+ * caller sends `expected_status` and a mismatch surfaces as an explicit
+ * `conflict` instead of a silent overwrite.
+ */
+export async function updateLeadMeetingStatus(
+  _prevState: UpdateLeadMeetingStatusState,
+  formData: FormData
+): Promise<UpdateLeadMeetingStatusState> {
+  const admin = await getCurrentAdmin()
+
+  if (!admin) {
+    return { status: "error", error: "Sessão expirada. Faça login novamente." }
+  }
+
+  const parsed = updateLeadMeetingStatusSchema.safeParse({
+    meeting_id: formData.get("meeting_id"),
+    status: formData.get("status"),
+    expected_status: formData.get("expected_status"),
+  })
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      error: "Dados inválidos.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    }
+  }
+
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from("lead_meetings")
+      .update({ status: parsed.data.status })
+      .eq("id", parsed.data.meeting_id)
+      .eq("status", parsed.data.expected_status)
+      .select("id")
+      .single()
+
+    if (data) {
+      return { status: "success" }
+    }
+
+    if (error && error.code !== NO_ROWS_ERROR_CODE) {
+      console.error("updateLeadMeetingStatus: failed to update meeting", error)
+      return { status: "error", error: "Não foi possível atualizar a reunião. Tente novamente." }
+    }
+
+    const { data: currentMeeting, error: currentMeetingError } = await supabase
+      .from("lead_meetings")
+      .select("status")
+      .eq("id", parsed.data.meeting_id)
+      .maybeSingle()
+
+    if (currentMeetingError || !currentMeeting) {
+      console.error(
+        "updateLeadMeetingStatus: meeting not found after a conditional update matched 0 rows",
+        currentMeetingError
+      )
+      return { status: "error", error: "Não foi possível atualizar a reunião. Tente novamente." }
+    }
+
+    return { status: "conflict", currentStatus: currentMeeting.status }
+  } catch (error) {
+    console.error("updateLeadMeetingStatus: unexpected failure", error)
+    return { status: "error", error: "Não foi possível atualizar a reunião. Tente novamente." }
   }
 }
