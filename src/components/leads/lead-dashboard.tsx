@@ -1,13 +1,24 @@
+"use client"
+
 import Link from "next/link"
 
 import { Form, FormField, FormInput } from "@/components/forms/form"
+import { LeadDrilldownPanel } from "@/components/leads/lead-drilldown-panel"
 import { LEAD_STATUS_LABELS } from "@/components/leads/lead-status-labels"
+import { useLeadDrilldown, type LeadDrilldownSlice } from "@/components/leads/use-lead-drilldown"
 import type { DailyAgendaAlerts } from "@/lib/leads/get-daily-agenda-alerts"
 import type { LeadRiskAlerts } from "@/lib/leads/get-lead-risk-alerts"
 import type { ProspectingOverview } from "@/lib/leads/get-prospecting-overview"
 import { LEAD_STATUSES } from "@/lib/leads/lead-status"
 
-type NamedCount = { label: string; count: number }
+type NamedCount = { label: string; count: number; slice: LeadDrilldownSlice }
+
+/** Pure — first/last calendar day (America/Sao_Paulo) of a "YYYY-MM" month. Exported for testing. */
+export function monthDateRange(month: string): { from: string; to: string } {
+  const start = new Date(month + "-01T00:00:00Z")
+  const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0))
+  return { from: month + "-01", to: end.toISOString().slice(0, 10) }
+}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("pt-BR", {
@@ -36,10 +47,12 @@ function CountPanel({
   title,
   description,
   rows,
+  onRowClick,
 }: {
   title: string
   description: string
   rows: NamedCount[]
+  onRowClick?: (slice: LeadDrilldownSlice) => void
 }) {
   return (
     <section className="min-w-0 rounded-2xl border border-[#30362e] bg-[#171a17] p-5 sm:p-6">
@@ -52,11 +65,26 @@ function CountPanel({
       ) : (
         <dl className="mt-5 grid grid-cols-1 gap-x-7 sm:grid-cols-2">
           {rows.map((row) => (
-            <div key={row.label} className="flex min-w-0 items-center justify-between gap-4 border-b border-[#2c312b] py-3">
-              <dt className="text-sm leading-5 text-[#d2d7cf]">{row.label}</dt>
-              <dd className="shrink-0 rounded-md bg-[#222720] px-2.5 py-1 text-sm font-semibold tabular-nums text-white">
-                {row.count}
-              </dd>
+            <div key={row.label} className="border-b border-[#2c312b]">
+              {onRowClick ? (
+                <button
+                  type="button"
+                  onClick={() => onRowClick(row.slice)}
+                  className="group flex min-h-11 w-full min-w-0 cursor-pointer items-center justify-between gap-4 rounded-md py-3 text-left transition hover:bg-[#1c201c] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020]"
+                >
+                  <dt className="text-sm leading-5 text-[#d2d7cf] transition group-hover:translate-x-0.5">{row.label}</dt>
+                  <dd className="shrink-0 rounded-md bg-[#222720] px-2.5 py-1 text-sm font-semibold tabular-nums text-white transition group-hover:bg-[#2c3227] group-hover:scale-105">
+                    {row.count}
+                  </dd>
+                </button>
+              ) : (
+                <div className="flex min-w-0 items-center justify-between gap-4 py-3">
+                  <dt className="text-sm leading-5 text-[#d2d7cf]">{row.label}</dt>
+                  <dd className="shrink-0 rounded-md bg-[#222720] px-2.5 py-1 text-sm font-semibold tabular-nums text-white">
+                    {row.count}
+                  </dd>
+                </div>
+              )}
             </div>
           ))}
         </dl>
@@ -69,26 +97,36 @@ export function LeadOverview({
   overview,
   selectedDates,
   invalidPeriod,
+  adminId,
 }: {
   overview: ProspectingOverview | null
   selectedDates: { from?: string; to?: string }
   invalidPeriod: boolean
+  adminId: string
 }) {
+  const drilldown = useLeadDrilldown()
+
   const funnel = overview
     ? LEAD_STATUSES.map((status) => ({
         label: LEAD_STATUS_LABELS[status],
         count: overview.funnel[status],
+        slice: { kind: "status" as const, value: status, label: LEAD_STATUS_LABELS[status] },
       }))
     : []
   const projectTypes = overview
     ? Object.entries(overview.projectTypeDistribution)
-        .map(([label, count]) => ({ label, count }))
+        .map(([label, count]) => ({
+          label,
+          count,
+          slice: { kind: "project_type" as const, value: label, label },
+        }))
         .sort((left, right) => right.count - left.count)
     : []
-  const monthlyVolume = overview?.volumeByMonth.map(({ month, count }) => ({
-    label: formatMonth(month),
-    count,
-  })) ?? []
+  const monthlyVolume = overview?.volumeByMonth.map(({ month, count }) => {
+    const label = formatMonth(month)
+    const { from, to } = monthDateRange(month)
+    return { label, count, slice: { kind: "month" as const, from, to, label } }
+  }) ?? []
   const activeLeads = overview
     ? overview.totalLeads
       - overview.funnel.contrato_fechado
@@ -186,21 +224,26 @@ export function LeadOverview({
             title="Funil por etapa"
             description="Quantidade de oportunidades em cada momento comercial."
             rows={funnel}
+            onRowClick={drilldown.open}
           />
           <CountPanel
             title="Tipos de projeto"
             description="Demandas mais procuradas pelos contatos recebidos."
             rows={projectTypes}
+            onRowClick={drilldown.open}
           />
           <div className="xl:col-span-2">
             <CountPanel
               title="Leads recebidos por mês"
               description="Histórico mensal dentro do período selecionado."
               rows={monthlyVolume}
+              onRowClick={drilldown.open}
             />
           </div>
         </div>
       )}
+
+      <LeadDrilldownPanel state={drilldown.state} close={drilldown.close} adminId={adminId} />
     </section>
   )
 }

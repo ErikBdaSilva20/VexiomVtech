@@ -3,6 +3,7 @@ import "server-only"
 import type { SupabaseClient } from "@supabase/supabase-js"
 
 import { escapeIlikeOrFilterValue } from "@/lib/leads/postgrest-filter"
+import { MS_PER_DAY, startOfLocalDay } from "@/lib/leads/sao-paulo-time"
 import type { Database } from "@/lib/supabase/database.types"
 import type { ListLeadsQuery } from "@/lib/leads/list-leads-schema"
 
@@ -51,6 +52,14 @@ export async function listLeads(
 
   if (filters.assigned_to) {
     query = query.eq("assigned_to", filters.assigned_to)
+  }
+
+  if (filters.from) {
+    query = query.gte("created_at", startOfLocalDay(filters.from).toISOString())
+  }
+
+  if (filters.to) {
+    query = query.lt("created_at", new Date(startOfLocalDay(filters.to).getTime() + MS_PER_DAY).toISOString())
   }
 
   const { data, error, count } = await query

@@ -9,7 +9,14 @@ function parseFilters(input: Record<string, unknown>) {
 }
 
 function mockQueryResult(result: { data: unknown[] | null; error: unknown; count: number | null }) {
-  const calls: { or?: string; eq: [string, unknown][]; contains?: [string, unknown]; range?: [number, number] } = {
+  const calls: {
+    or?: string
+    eq: [string, unknown][]
+    contains?: [string, unknown]
+    gte?: [string, unknown]
+    lt?: [string, unknown]
+    range?: [number, number]
+  } = {
     eq: [],
   }
 
@@ -24,6 +31,14 @@ function mockQueryResult(result: { data: unknown[] | null; error: unknown; count
     }),
     contains: vi.fn().mockImplementation((column: string, value: unknown) => {
       calls.contains = [column, value]
+      return query
+    }),
+    gte: vi.fn().mockImplementation((column: string, value: unknown) => {
+      calls.gte = [column, value]
+      return query
+    }),
+    lt: vi.fn().mockImplementation((column: string, value: unknown) => {
+      calls.lt = [column, value]
       return query
     }),
     order: vi.fn().mockReturnThis(),
@@ -107,6 +122,38 @@ describe("listLeads", () => {
     await listLeads(supabase, parseFilters({ tag: "urgente" }))
 
     expect(calls.contains).toEqual(["tags", ["urgente"]])
+  })
+
+  it("applies from as a gte() filter on created_at at local-day start", async () => {
+    const { from, calls } = mockQueryResult({ data: [], error: null, count: 0 })
+    const supabase = { from } as never
+
+    await listLeads(supabase, parseFilters({ from: "2026-03-01" }))
+
+    expect(calls.gte?.[0]).toBe("created_at")
+    expect(calls.gte?.[1]).toBe("2026-03-01T03:00:00.000Z")
+    expect(calls.lt).toBeUndefined()
+  })
+
+  it("applies to as an exclusive lt() filter on the day after created_at", async () => {
+    const { from, calls } = mockQueryResult({ data: [], error: null, count: 0 })
+    const supabase = { from } as never
+
+    await listLeads(supabase, parseFilters({ to: "2026-03-31" }))
+
+    expect(calls.lt?.[0]).toBe("created_at")
+    expect(calls.lt?.[1]).toBe("2026-04-01T03:00:00.000Z")
+    expect(calls.gte).toBeUndefined()
+  })
+
+  it("applies both from and to together for a month-slice range", async () => {
+    const { from, calls } = mockQueryResult({ data: [], error: null, count: 0 })
+    const supabase = { from } as never
+
+    await listLeads(supabase, parseFilters({ from: "2026-03-01", to: "2026-03-31" }))
+
+    expect(calls.gte?.[1]).toBe("2026-03-01T03:00:00.000Z")
+    expect(calls.lt?.[1]).toBe("2026-04-01T03:00:00.000Z")
   })
 
   it("throws a generic error and logs when the query fails", async () => {

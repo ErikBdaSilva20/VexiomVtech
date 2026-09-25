@@ -165,6 +165,7 @@ export default async function LeadsPage({
             overview={overview}
             selectedDates={{ from: dashboardQuery.from ?? undefined, to: dashboardQuery.to ?? undefined }}
             invalidPeriod={!parsedDashboard.success}
+            adminId={admin.id}
           />
         )}
 

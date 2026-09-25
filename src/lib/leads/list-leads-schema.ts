@@ -25,8 +25,16 @@ export const listLeadsQuerySchema = z.object({
   tag: optionalFilter(MAX_FILTER_LENGTH),
   project_type: optionalFilter(MAX_FILTER_LENGTH),
   assigned_to: z.uuid().nullish().transform((value) => value ?? undefined),
+  // Optional `created_at` range (America/Sao_Paulo calendar dates), used by
+  // the leads-overview drill-down to filter a "month" slice — mirrors
+  // `prospecting-overview-schema.ts`'s date handling.
+  from: z.iso.date({ error: "Data inicial inválida." }).nullish().transform((value) => value ?? undefined),
+  to: z.iso.date({ error: "Data final inválida." }).nullish().transform((value) => value ?? undefined),
   page: z.coerce.number().int().min(1).default(1),
   page_size: z.coerce.number().int().min(1).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
+}).refine((value) => !value.from || !value.to || value.from <= value.to, {
+  error: "A data inicial deve ser anterior ou igual à data final.",
+  path: ["from"],
 })
 
 export type ListLeadsQuery = z.infer<typeof listLeadsQuerySchema>

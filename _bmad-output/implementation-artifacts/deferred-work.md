@@ -49,3 +49,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-admin-dashboard-overview.md`
   summary: Add loading.tsx/Suspense boundaries so the admin dashboard streams sections independently instead of blocking on the slowest of four data calls.
   evidence: Blind Hunter review flagged this during the dashboard build. Real architectural improvement, but every existing admin page (contratos, financeiro, leads) shares the same synchronous full-page-fetch pattern today — not unique to the dashboard, and fixing it here alone would be inconsistent. Revisit as a codebase-wide admin data-fetching pattern change if page load times become a real complaint.
+- source_spec: `_bmad-output/implementation-artifacts/spec-leads-drilldown.md`
+  summary: Add jsdom/testing-library to the project so client-hook fetch/state-transition flows (e.g. `useLeadDrilldown`'s loading→success/error) can be tested at the DOM level.
+  evidence: Verification-gap review flagged that `useLeadDrilldown`'s open()→fetch→state-transition flow has no DOM-level test, only pure-function coverage. `vitest.config.ts` runs a `node` environment with no jsdom/testing-library anywhere in the repo — a pre-existing, project-wide testing gap, not introduced by this story. Revisit if client-side interactive components become more common.
