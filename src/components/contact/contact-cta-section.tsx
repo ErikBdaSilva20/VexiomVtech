@@ -11,20 +11,20 @@ export function ContactCtaSection() {
     >
       <div className="max-w-[calc(760*var(--unit))] mx-auto px-[calc(94*var(--unit))] pt-[calc(88*var(--unit))] pb-[calc(94*var(--unit))] text-center [@media(max-width:1100px)]:px-[5%] [@media(max-width:1100px)]:pt-[70px] [@media(max-width:1100px)]:pb-[74px] [@media(max-width:650px)]:px-[21px] [@media(max-width:650px)]:pt-[58px] [@media(max-width:650px)]:pb-[60px]">
         <p className="flex items-center justify-center gap-[calc(13*var(--unit))] text-[#c7c9c4] text-[calc(10*var(--unit))] font-[650] tracking-[0.18em] before:content-[''] before:w-[calc(29*var(--unit))] before:h-[calc(2*var(--unit))] before:bg-vexiom-yellow after:content-[''] after:w-[calc(29*var(--unit))] after:h-[calc(2*var(--unit))] after:bg-vexiom-yellow">
-          VAMOS CONVERSAR
+          PRÓXIMO PASSO
         </p>
         <h2
           id="contact-cta-title"
           className="mt-[calc(28*var(--unit))] text-[#f4f4f2] text-[calc(38*var(--unit))] font-[760] leading-[1.08] tracking-[-0.06em] [@media(max-width:1100px)]:text-[32px] [@media(max-width:650px)]:mt-[24px] [@media(max-width:650px)]:text-[27px] [@media(max-width:360px)]:text-[24px]"
         >
-          Pronto para colocar seu projeto
+          Vamos definir o próximo passo
           <br />
-          <span className="text-vexiom-yellow">em movimento?</span>
+          <span className="text-vexiom-yellow">do seu negócio.</span>
         </h2>
         <p className="max-w-[calc(480*var(--unit))] mt-[calc(28*var(--unit))] mx-auto text-[#afb1ae] text-[calc(15*var(--unit))] leading-[1.6] [@media(max-width:650px)]:mt-[22px] [@media(max-width:650px)]:text-[14px]">
-          Entendemos o problema na raiz e criamos soluções digitais sob
-          medida, simples de usar e acompanhadas de perto do início ao
-          suporte.
+          Conte o que está travando sua operação. A Vexiom ajuda você a
+          transformar esse cenário em uma solução clara, viável e acompanhada
+          de perto.
         </p>
         <div className="flex justify-center mt-[calc(36*var(--unit))] [@media(max-width:650px)]:mt-[28px]">
           <ArrowLink

@@ -149,14 +149,14 @@ export function CaseEditor({
 
           <section aria-labelledby="case-story-title" className="space-y-5 border-t border-[#292b28] pt-7">
             <h2 id="case-story-title" className="text-lg font-semibold text-white">História do projeto</h2>
-            <FormField htmlFor="case-description" label="Descrição detalhada *" error={fieldError("description")}>
+            <FormField htmlFor="case-description" label="Situação do projeto *" hint="Descreva o contexto, o desafio e o que estava acontecendo antes." error={fieldError("description")}>
               <FormTextarea id="case-description" name="description" rows={6} maxLength={5000} defaultValue={initial?.description ?? ""} required aria-invalid={Boolean(fieldError("description"))} />
             </FormField>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <FormField htmlFor="case-solution" label="O que o projeto resolveu *" error={fieldError("problem_solved")}>
+              <FormField htmlFor="case-solution" label="O que fizemos *" hint="Explique a solução construída e as principais decisões." error={fieldError("problem_solved")}>
                 <FormTextarea id="case-solution" name="problem_solved" rows={5} maxLength={5000} defaultValue={initial?.problem_solved ?? ""} required aria-invalid={Boolean(fieldError("problem_solved"))} />
               </FormField>
-              <FormField htmlFor="case-motivation" label="Por que foi construído *" error={fieldError("motivation")}>
+              <FormField htmlFor="case-motivation" label="Resultado gerado *" hint="Registre o impacto alcançado, de preferência com números ou evidências." error={fieldError("motivation")}>
                 <FormTextarea id="case-motivation" name="motivation" rows={5} maxLength={5000} defaultValue={initial?.motivation ?? ""} required aria-invalid={Boolean(fieldError("motivation"))} />
               </FormField>
             </div>

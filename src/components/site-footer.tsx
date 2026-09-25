@@ -13,7 +13,7 @@ export function SiteFooter() {
           </p>
           <p className="mt-[calc(12*var(--unit))] text-[#a7aaa5] text-[calc(13*var(--unit))] leading-[1.6]">
             Soluções digitais sob medida, simples de usar e acompanhadas de
-            perto do início ao suporte.
+            perto do início à evolução.
           </p>
         </div>
         <nav

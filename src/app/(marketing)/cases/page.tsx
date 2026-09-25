@@ -74,7 +74,7 @@ export default async function CasesPage({
       <PageHero
         eyebrow="Resultados"
         title="Projetos que geram resultado."
-        description="Conheça trabalhos publicados pela Vexiom, o problema que cada um resolveu e como foi construído."
+        description="Conheça trabalhos publicados pela Vexiom: a situação encontrada, o que foi feito e o resultado gerado."
       />
 
       <section aria-labelledby="cases-list-title" className="mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-8 sm:pt-14 lg:px-12">
@@ -115,7 +115,9 @@ export default async function CasesPage({
                       </Link>
                     </h3>
                     {item.client_name && <p className="mt-1 text-xs text-[#91938f]">{item.client_name}</p>}
-                    <p className="mt-4 line-clamp-3 text-sm leading-6 text-[#b3b5af]">{item.description}</p>
+                    <div className="mt-4 space-y-2 text-sm leading-5 text-[#b3b5af]">
+                      <p className="line-clamp-2"><span className="mr-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#aaa]">Situação</span>{item.description}</p>
+                    </div>
                     <Link prefetch={false} href={"/cases/" + encodeURIComponent(item.slug)} className="mt-5 inline-flex min-h-10 items-center self-start text-sm font-semibold text-vexiom-yellow underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-vexiom-yellow">
                       Ver case <span aria-hidden="true" className="ml-2">↗</span>
                     </Link>

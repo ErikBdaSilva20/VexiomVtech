@@ -14,15 +14,15 @@ export function ResolutionsSection() {
       <div className="relative grid grid-cols-[minmax(0,calc(440*var(--unit)))_minmax(0,1fr)] gap-[calc(92*var(--unit))] w-[min(100%,calc(1412*var(--unit)))] mx-auto px-[calc(56*var(--unit))] pt-[calc(88*var(--unit))] pb-[calc(94*var(--unit))] [@media(max-width:1100px)]:grid-cols-[minmax(240px,0.62fr)_minmax(0,1fr)] [@media(max-width:1100px)]:gap-[48px] [@media(max-width:1100px)]:px-[5%] [@media(max-width:1100px)]:pt-[70px] [@media(max-width:1100px)]:pb-[74px] [@media(max-width:650px)]:grid-cols-[1fr] [@media(max-width:650px)]:gap-[48px] [@media(max-width:650px)]:px-[21px] [@media(max-width:650px)]:pt-[58px] [@media(max-width:650px)]:pb-[60px] [@media(max-width:360px)]:px-[17px]">
         <div className="self-start pt-[calc(8*var(--unit))] [@media(max-width:650px)]:max-w-[470px] [@media(max-width:650px)]:pt-0">
           <p className="flex items-center gap-[calc(13*var(--unit))] text-[#c7c9c4] text-[calc(10*var(--unit))] font-[650] tracking-[0.18em] before:content-[''] before:w-[calc(29*var(--unit))] before:h-[calc(2*var(--unit))] before:bg-vexiom-yellow">
-            O QUE RESOLVEMOS
+            O QUE MUDA NA PRÁTICA
           </p>
           <h2
             id="resolutions-title"
             className="mt-[calc(28*var(--unit))] text-[#f4f4f2] text-[calc(42*var(--unit))] font-[760] leading-[1.03] tracking-[-0.06em] [@media(max-width:1100px)]:text-[36px] [@media(max-width:650px)]:mt-[24px] [@media(max-width:650px)]:text-[33px] [@media(max-width:360px)]:text-[29px]"
           >
-            Tecnologia que melhora
+            O que muda quando a tecnologia
             <br />
-            <span className="text-vexiom-yellow">o que importa.</span>
+            <span className="text-vexiom-yellow">trabalha a favor do negócio.</span>
           </h2>
           <p className="max-w-[calc(385*var(--unit))] mt-[calc(32*var(--unit))] text-[#afb1ae] text-[calc(15*var(--unit))] leading-[1.6] [@media(max-width:650px)]:mt-[24px] [@media(max-width:650px)]:text-[14px]">
             Cada projeto começa pelo ponto que está impedindo seu negócio de

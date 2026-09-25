@@ -16,7 +16,7 @@ export default function ServicosPage() {
       <PageHero
         eyebrow="O que fazemos"
         title="Soluções com propósito."
-        description="Cada serviço existe para resolver um problema real de operação. Abaixo estão o escopo, o prazo típico e o investimento inicial de cada um. O valor final é sempre definido depois de entender o seu cenário."
+        description="Cada serviço existe para resolver um problema real. Veja o escopo e o prazo típico de cada solução; o investimento é definido depois de entendermos seu cenário, complexidade e prioridade."
       />
       <section
         className="py-[calc(50*var(--unit))] px-[calc(94*var(--unit))] [@media(max-width:1100px)]:px-[5%] [@media(max-width:650px)]:px-[21px]"

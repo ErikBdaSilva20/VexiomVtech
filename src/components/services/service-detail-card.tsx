@@ -37,15 +37,15 @@ export function ServiceDetailCard({ service }: ServiceDetailCardProps) {
         </p>
       )}
 
-      {(service.startingPrice || service.timeline) && (
+      {(service.investmentNote || service.timeline) && (
         <div className="flex flex-wrap gap-x-[calc(28*var(--unit))] gap-y-[calc(6*var(--unit))] mb-[calc(20*var(--unit))] pt-[calc(16*var(--unit))] pb-[calc(16*var(--unit))] border-t border-b border-[#292b28]">
-          {service.startingPrice && (
+          {service.investmentNote && (
             <div>
               <p className="text-[#a3a5a1] text-[calc(9.5*var(--unit))] font-semibold tracking-[0.14em] uppercase">
                 Investimento
               </p>
               <p className="mt-[calc(4*var(--unit))] text-vexiom-yellow text-[calc(15*var(--unit))] font-bold tracking-[-0.02em]">
-                {service.startingPrice}
+                {service.investmentNote}
               </p>
             </div>
           )}

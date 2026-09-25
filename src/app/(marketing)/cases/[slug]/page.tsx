@@ -71,15 +71,15 @@ export default async function CaseDetailPage({
         <div className="mt-10 grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(260px,0.65fr)]">
           <div className="space-y-10">
             <section aria-labelledby="case-about">
-              <h2 id="case-about" className="text-2xl font-semibold text-white">Sobre o projeto</h2>
+              <h2 id="case-about" className="text-2xl font-semibold text-white">Situação</h2>
               <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-7 text-[#b7b9b3] sm:text-base">{item.description}</p>
             </section>
             <section aria-labelledby="case-solution" className="border-t border-[#292b28] pt-8">
-              <h2 id="case-solution" className="text-2xl font-semibold text-white">O que resolvemos</h2>
+              <h2 id="case-solution" className="text-2xl font-semibold text-white">O que fizemos</h2>
               <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-7 text-[#b7b9b3] sm:text-base">{item.problem_solved}</p>
             </section>
             <section aria-labelledby="case-motivation" className="border-t border-[#292b28] pt-8">
-              <h2 id="case-motivation" className="text-2xl font-semibold text-white">Por que construímos</h2>
+              <h2 id="case-motivation" className="text-2xl font-semibold text-white">Resultado</h2>
               <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-7 text-[#b7b9b3] sm:text-base">{item.motivation}</p>
             </section>
           </div>

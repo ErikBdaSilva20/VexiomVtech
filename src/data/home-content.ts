@@ -51,8 +51,8 @@ export interface ServiceItem {
   kicker?: string
   /** One line naming the situation this service is the right fit for. */
   problemFit?: string
-  /** Indicative floor, e.g. "A partir de R$ 650". Never a closed price. */
-  startingPrice?: string
+  /** Investment is defined after the project scope is understood. */
+  investmentNote?: string
   timeline?: string
   includes?: string[]
 }
@@ -83,25 +83,25 @@ export const PROBLEMS: ProblemItem[] = [
     icon: "monitor",
     index: "02",
     kicker: "PRESENÇA DIGITAL",
-    title: "Seu site faz o cliente desconfiar",
+    title: "Seu site não deixa claro por que escolher você",
     description:
-      "Sem clareza sobre o que você oferece, o cliente em potencial escolhe o concorrente que parece mais confiável.",
+      "Quando a proposta não aparece rápido, o cliente em potencial segue para quem parece mais fácil de entender.",
     impact: "Impacto: a oportunidade se perde antes do primeiro contato.",
   },
   {
     icon: "link",
     index: "03",
     kicker: "FERRAMENTAS DESCONECTADAS",
-    title: "Cada sistema tem uma versão da verdade",
+    title: "Sua equipe trabalha com dados espalhados",
     description:
-      "Vendas, atendimento e operação rodam separados, e a informação se perde de um time para o outro.",
+      "Vendas, atendimento e operação rodam separados, e a informação demora a chegar a quem precisa decidir.",
     impact: "Impacto: retrabalho, erro de dado e decisão tomada no escuro.",
   },
   {
     icon: "trending-up",
     index: "04",
     kicker: "CRESCIMENTO SEM ESTRUTURA",
-    title: "Crescer expôs o que era improviso",
+    title: "O improviso começou a travar o crescimento",
     description:
       "O que dava conta no começo trava a operação assim que o volume de clientes aumenta de verdade.",
     impact: "Impacto: a empresa cresce, mas o caos cresce junto.",
@@ -121,39 +121,31 @@ export interface ResolutionItem {
   outcome: string
 }
 
-/** Business outcomes shown in the third Home section, before technical details. */
+/** Three initial solution fronts shown on the home page. */
 export const RESOLUTIONS: ResolutionItem[] = [
   {
     index: "01",
-    category: "Presença digital",
-    title: "Uma presença que transmite confiança.",
+    category: "SITES E SISTEMAS",
+    title: "Uma presença e uma operação que funcionam.",
     description:
-      "Transformamos serviços e ideias em experiências digitais claras, rápidas e fáceis de encontrar.",
-    outcome: "Para ser encontrado, entendido e escolhido.",
+      "Criamos sites e sistemas sob medida para explicar melhor o seu negócio e organizar o que acontece por trás dele.",
+    outcome: "Para apresentar, atender e operar com mais clareza.",
   },
   {
     index: "02",
-    category: "Operação",
-    title: "Rotinas que não travam o seu dia.",
+    category: "AUTOMAÇÕES COM IA",
+    title: "Mais tempo para o que faz seu negócio avançar.",
     description:
-      "Organizamos processos, sistemas e automações para reduzir retrabalho e manter a informação no lugar certo.",
-    outcome: "Para sobrar tempo para o que faz o negócio avançar.",
+      "Automatizamos tarefas repetitivas e conectamos processos para sua equipe trabalhar com menos retrabalho.",
+    outcome: "Para transformar horas operacionais em tempo útil.",
   },
   {
     index: "03",
-    category: "Vendas online",
-    title: "Uma jornada de compra mais simples.",
+    category: "LOJAS VIRTUAIS",
+    title: "Uma venda online mais simples.",
     description:
-      "Criamos lojas e fluxos digitais que tornam mais fácil apresentar, vender e atender pela internet.",
-    outcome: "Para transformar interesse em oportunidade real.",
-  },
-  {
-    index: "04",
-    category: "Crescimento",
-    title: "Estrutura para evoluir sem perder o controle.",
-    description:
-      "Construímos soluções sob medida para validar ideias, conectar ferramentas e acompanhar a próxima fase do negócio.",
-    outcome: "Para crescer com clareza, não com improviso.",
+      "Criamos lojas e fluxos de compra que ajudam o cliente a encontrar, escolher e finalizar sem atrito.",
+    outcome: "Para transformar interesse em pedido.",
   },
 ]
 
@@ -201,11 +193,11 @@ export const WORK_STEPS: WorkStepItem[] = [
   {
     icon: "shield-check",
     index: "04",
-    title: "Entrega e suporte",
+    title: "Entrega e orientação",
     description:
-      "Orientação no uso da solução e acompanhamento contínuo depois do lançamento.",
+      "Orientação no uso da solução e suporte opcional depois do lançamento.",
     detail:
-      "Orientação para usar a solução no dia a dia, com a opção de manter suporte contínuo por R$ 30/mês depois do lançamento.",
+      "Orientação para usar a solução no dia a dia. Depois do lançamento, você pode contratar suporte contínuo por R$ 30/mês.",
   },
 ]
 
@@ -252,7 +244,7 @@ export const SERVICES: ServiceItem[] = [
     kicker: "PRESENÇA DIGITAL",
     problemFit:
       "Ideal quando seu site atual afasta em vez de convencer, ou quando ainda não existe nenhuma presença online.",
-    startingPrice: "A partir de R$ 650",
+    investmentNote: "Definido após entender o escopo",
     timeline: "1 a 2 semanas",
     includes: [
       "Até 5 páginas, com design responsivo sob medida",
@@ -270,7 +262,7 @@ export const SERVICES: ServiceItem[] = [
     kicker: "OPERAÇÃO",
     problemFit:
       "Ideal quando sua operação depende de planilha, retrabalho manual ou sistemas que não conversam entre si.",
-    startingPrice: "A partir de R$ 900",
+    investmentNote: "Definido após entender o escopo",
     timeline: "Varia por escopo, definido na conversa",
     includes: [
       "Levantamento do processo antes de qualquer linha de código",
@@ -287,7 +279,7 @@ export const SERVICES: ServiceItem[] = [
     kicker: "VENDAS ONLINE",
     problemFit:
       "Ideal quando você quer vender pela internet sem depender só de rede social ou marketplace.",
-    startingPrice: "A partir de R$ 850",
+    investmentNote: "Definido após entender o escopo",
     timeline: "2 a 3 semanas",
     includes: [
       "Catálogo de produtos",
@@ -304,7 +296,7 @@ export const SERVICES: ServiceItem[] = [
     kicker: "AUTOMAÇÃO COM IA",
     problemFit:
       "Ideal quando uma tarefa repetitiva do seu dia a dia já tem um padrão claro e só falta automatizar.",
-    startingPrice: "A partir de R$ 550",
+    investmentNote: "Definido após entender o escopo",
     timeline: "Varia por escopo",
     includes: [
       "Automação de um fluxo definido em conjunto com você",
@@ -317,5 +309,5 @@ export const SERVICES: ServiceItem[] = [
 export const SUPPORT_PLAN = {
   price: "R$ 30/mês",
   description:
-    "Depois da entrega, você pode manter a solução em dia com um suporte contínuo de baixo custo, sem taxa obrigatória e sem letra miúda.",
+    "Depois da entrega, você pode contratar suporte contínuo por R$ 30/mês para manter a solução em dia — sem taxa obrigatória e sem letra miúda.",
 }

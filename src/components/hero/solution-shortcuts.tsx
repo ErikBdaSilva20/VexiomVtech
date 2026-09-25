@@ -1,18 +1,18 @@
 const solutions = [
   {
-    description: "Automatize rotinas e integre processos.",
+    description: "Menos tarefas repetitivas e mais tempo para avançar.",
     href: "#o-que-resolvemos",
     title: "Automações com IA",
   },
   {
-    description: "E-commerce, plataformas e produtos full-stack.",
+    description: "Sites e sistemas feitos para o seu jeito de trabalhar.",
     href: "#o-que-resolvemos",
-    title: "Sistemas Web",
+    title: "Sites e sistemas sob medida",
   },
   {
-    description: "Landing pages e portfólios que convertem.",
+    description: "Venda pela internet com uma experiência mais simples.",
     href: "#o-que-resolvemos",
-    title: "Páginas institucionais",
+    title: "Lojas virtuais",
   },
 ] as const
 

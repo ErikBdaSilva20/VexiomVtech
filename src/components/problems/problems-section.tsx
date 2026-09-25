@@ -13,7 +13,7 @@ export function ProblemsSection() {
       <div className="pt-[calc(64*var(--unit))] px-[calc(94*var(--unit))] pb-[calc(70*var(--unit))] [@media(max-width:1100px)]:pt-[60px] [@media(max-width:1100px)]:px-[5%] [@media(max-width:1100px)]:pb-[50px] [@media(max-width:650px)]:pt-[40px] [@media(max-width:650px)]:px-[21px] [@media(max-width:650px)]:pb-[40px]">
         <div className="max-w-[calc(660*var(--unit))] [@media(max-width:1100px)]:max-w-[480px] [@media(max-width:650px)]:max-w-full">
           <p className="text-[#bcbcc3] text-[calc(10*var(--unit))] font-[550] leading-[calc(17*var(--unit))] tracking-[0.18em] after:content-[''] after:block after:w-[calc(28*var(--unit))] after:h-[calc(2*var(--unit))] after:mt-[calc(8*var(--unit))] after:bg-[#d8cc18]">
-            PROBLEMAS QUE RESOLVEMOS
+            ONDE A OPERAÇÃO PERDE FORÇA
           </p>
           <h2
             id="problems-title"
@@ -21,7 +21,7 @@ export function ProblemsSection() {
           >
             Quatro sinais de que sua operação
             <br />
-            <span className="text-vexiom-yellow">pede mais direção.</span>
+            <span className="text-vexiom-yellow">o improviso já custa caro.</span>
           </h2>
           <p className="mt-[calc(26*var(--unit))] text-vexiom-gray-medium text-[calc(15*var(--unit))] leading-[calc(22*var(--unit))] [@media(max-width:650px)]:text-[13px]">
             Antes de falar de soluções, vale entender onde a tecnologia mal
