@@ -97,50 +97,6 @@ export default async function PainelIndexPage() {
           </p>
         </header>
 
-        <section aria-labelledby="prospecting-section-title" className="mb-10">
-          <SectionHeader id="prospecting-section-title" eyebrow="Prospecção" title="Leads" />
-          {overviewError || !overview ? (
-            <ErrorState message="Não foi possível carregar os indicadores de prospecção agora." />
-          ) : (
-            <>
-              <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Leads no período" value={count.format(overview.totalLeads)} />
-                <StatCard
-                  label="Taxa de conversão"
-                  value={percent.format(overview.conversionRate)}
-                  hint="Contratos fechados / total de leads"
-                />
-                <StatCard
-                  label="Contratos fechados"
-                  value={count.format(overview.funnel.contrato_fechado)}
-                />
-                <StatCard
-                  label="Follow-up pendente"
-                  value={count.format(overview.funnel.follow_up_pendente)}
-                />
-              </div>
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5">
-                  <h3 className="mb-3 text-sm font-semibold text-white">Volume de leads por mês</h3>
-                  {overview.volumeByMonth.every((m) => m.count === 0) ? (
-                    <p className="py-10 text-center text-sm text-[#aaa]">Nenhum lead registrado.</p>
-                  ) : (
-                    <LeadsVolumeChart data={overview.volumeByMonth} />
-                  )}
-                </div>
-                <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5">
-                  <h3 className="mb-3 text-sm font-semibold text-white">Leads por status</h3>
-                  {overview.totalLeads === 0 ? (
-                    <p className="py-10 text-center text-sm text-[#aaa]">Nenhum lead registrado.</p>
-                  ) : (
-                    <LeadsFunnelChart funnel={overview.funnel} />
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </section>
-
         {isSuperAdmin && (
           <section aria-labelledby="financial-section-title" className="mb-10">
             <SectionHeader id="financial-section-title" eyebrow="Financeiro" title="Caixa" />
@@ -185,6 +141,50 @@ export default async function PainelIndexPage() {
             )}
           </section>
         )}
+
+        <section aria-labelledby="prospecting-section-title" className="mb-10">
+          <SectionHeader id="prospecting-section-title" eyebrow="Prospecção" title="Leads" />
+          {overviewError || !overview ? (
+            <ErrorState message="Não foi possível carregar os indicadores de prospecção agora." />
+          ) : (
+            <>
+              <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard label="Leads no período" value={count.format(overview.totalLeads)} />
+                <StatCard
+                  label="Taxa de conversão"
+                  value={percent.format(overview.conversionRate)}
+                  hint="Contratos fechados / total de leads"
+                />
+                <StatCard
+                  label="Contratos fechados"
+                  value={count.format(overview.funnel.contrato_fechado)}
+                />
+                <StatCard
+                  label="Follow-up pendente"
+                  value={count.format(overview.funnel.follow_up_pendente)}
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5">
+                  <h3 className="mb-3 text-sm font-semibold text-white">Volume de leads por mês</h3>
+                  {overview.volumeByMonth.every((m) => m.count === 0) ? (
+                    <p className="py-10 text-center text-sm text-[#aaa]">Nenhum lead registrado.</p>
+                  ) : (
+                    <LeadsVolumeChart data={overview.volumeByMonth} />
+                  )}
+                </div>
+                <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5">
+                  <h3 className="mb-3 text-sm font-semibold text-white">Leads por status</h3>
+                  {overview.totalLeads === 0 ? (
+                    <p className="py-10 text-center text-sm text-[#aaa]">Nenhum lead registrado.</p>
+                  ) : (
+                    <LeadsFunnelChart funnel={overview.funnel} />
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </section>
 
         {isSuperAdmin && (
           <section aria-labelledby="contracts-section-title">
