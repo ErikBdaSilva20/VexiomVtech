@@ -52,3 +52,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-leads-drilldown.md`
   summary: Add jsdom/testing-library to the project so client-hook fetch/state-transition flows (e.g. `useLeadDrilldown`'s loading→success/error) can be tested at the DOM level.
   evidence: Verification-gap review flagged that `useLeadDrilldown`'s open()→fetch→state-transition flow has no DOM-level test, only pure-function coverage. `vitest.config.ts` runs a `node` environment with no jsdom/testing-library anywhere in the repo — a pre-existing, project-wide testing gap, not introduced by this story. Revisit if client-side interactive components become more common.
+- source_spec: none
+  summary: WhatsApp input masking ("(DD) 9XXXX-XXXX"), digits-only normalization in the schema/DB, tolerant re-formatting of stored values on display, and a super_admin-only "Abrir no WhatsApp" (wa.me) button on the lead detail page.
+  evidence: Multi-goal split from the mailto-CTA-replacement intent — this touches `lead-schema.ts`, both lead-creation forms (public + admin manual entry), and lead list/detail rendering, and the wa.me button depends on the digits-only normalization landing first. Independently shippable from the CTA→/contato routing change, which has zero dependency on it.

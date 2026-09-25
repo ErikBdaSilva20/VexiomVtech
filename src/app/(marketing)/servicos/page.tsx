@@ -24,7 +24,7 @@ export default function ServicosPage() {
       >
         <div className="grid grid-cols-2 gap-[calc(24*var(--unit))] [@media(max-width:1100px)]:gap-[20px] [@media(max-width:650px)]:grid-cols-1 [@media(max-width:650px)]:gap-[16px]">
           {SERVICES.map((service) => (
-            <ServiceDetailCard key={service.href} service={service} />
+            <ServiceDetailCard key={service.title} service={service} />
           ))}
         </div>
 

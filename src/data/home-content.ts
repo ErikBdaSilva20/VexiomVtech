@@ -21,12 +21,12 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const HEADER_CTA = {
   label: "Vamos conversar",
-  href: `mailto:${CONTACT_EMAIL}?subject=Vamos%20conversar`,
+  href: "/contato",
 }
 
 export const HERO_PRIMARY_CTA = {
   label: "Agendar conversa",
-  href: `mailto:${CONTACT_EMAIL}?subject=Agendar%20uma%20conversa`,
+  href: "/contato",
 }
 
 export const HERO_SECONDARY_CTA = {
@@ -110,7 +110,7 @@ export const PROBLEMS: ProblemItem[] = [
 
 export const PROBLEMS_BRIDGE_CTA = {
   label: "Quero resolver meu cenário",
-  href: `mailto:${CONTACT_EMAIL}?subject=Quero%20analisar%20meu%20cen%C3%A1rio`,
+  href: "/contato",
 }
 
 export interface ResolutionItem {
@@ -240,7 +240,7 @@ export const SERVICES: ServiceItem[] = [
     icon: "monitor",
     title: "Sites e Landing Pages",
     description: ["Presença digital que", "gera oportunidades."],
-    href: `mailto:${CONTACT_EMAIL}?subject=Sites%20e%20Landing%20Pages`,
+    href: "/contato",
     kicker: "PRESENÇA DIGITAL",
     problemFit:
       "Ideal quando seu site atual afasta em vez de convencer, ou quando ainda não existe nenhuma presença online.",
@@ -257,7 +257,7 @@ export const SERVICES: ServiceItem[] = [
     icon: "settings",
     title: "Sistemas Sob Medida",
     description: ["Processos mais simples", "e negócios mais eficientes."],
-    href: `mailto:${CONTACT_EMAIL}?subject=Sistemas%20Sob%20Medida`,
+    href: "/contato",
     featured: true,
     kicker: "OPERAÇÃO",
     problemFit:
@@ -275,7 +275,7 @@ export const SERVICES: ServiceItem[] = [
     icon: "cart",
     title: "Lojas Online",
     description: ["Venda mais com", "experiências que convertem."],
-    href: `mailto:${CONTACT_EMAIL}?subject=Lojas%20Online`,
+    href: "/contato",
     kicker: "VENDAS ONLINE",
     problemFit:
       "Ideal quando você quer vender pela internet sem depender só de rede social ou marketplace.",
@@ -292,7 +292,7 @@ export const SERVICES: ServiceItem[] = [
     icon: "brain",
     title: "Automações com IA",
     description: ["Mais tempo para o que", "realmente importa."],
-    href: `mailto:${CONTACT_EMAIL}?subject=Automa%C3%A7%C3%B5es%20com%20IA`,
+    href: "/contato",
     kicker: "AUTOMAÇÃO COM IA",
     problemFit:
       "Ideal quando uma tarefa repetitiva do seu dia a dia já tem um padrão claro e só falta automatizar.",
