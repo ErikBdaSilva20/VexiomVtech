@@ -189,7 +189,6 @@ export function LeadOverview({
           </p>
         </div>
         <Form action="/painel-8f2k/leads" method="get" className="grid w-full grid-cols-2 items-end gap-3 lg:w-auto lg:grid-cols-[minmax(150px,1fr)_minmax(150px,1fr)_auto]">
-          <input type="hidden" name="section" value="overview" />
           <FormField htmlFor="dashboard-from" label="Data inicial">
             <FormInput id="dashboard-from" name="from" type="date" defaultValue={overview?.from ?? selectedDates.from ?? ""} />
           </FormField>

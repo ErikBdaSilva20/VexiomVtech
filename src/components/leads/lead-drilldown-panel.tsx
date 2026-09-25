@@ -135,22 +135,25 @@ export function LeadDrilldownPanel({
             </p>
           )}
 
-          {state.status === "success" && state.result.leads.length > 0 && (
-            <>
-              {truncationNote(state.result.leads.length) && (
-                <p role="status" className="mb-4 rounded-lg border border-[#4d412c] bg-[#211d14] px-4 py-3 text-sm text-[#e0cfa8]">
-                  {truncationNote(state.result.leads.length)}
-                </p>
-              )}
-              <ul className="list-none divide-y divide-[#30362e] overflow-hidden rounded-2xl border border-[#343a32] bg-[#171a17] p-0">
-                {state.result.leads.slice(0, DRILLDOWN_RENDER_CAP).map((lead) => (
-                  <li key={lead.id} className="transition-colors hover:bg-[#1c201c]">
-                    <LeadListItem lead={lead} adminId={adminId} />
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+          {state.status === "success" && state.result.leads.length > 0 && (() => {
+            const note = truncationNote(state.result.leads.length)
+            return (
+              <>
+                {note && (
+                  <p role="status" className="mb-4 rounded-lg border border-[#4d412c] bg-[#211d14] px-4 py-3 text-sm text-[#e0cfa8]">
+                    {note}
+                  </p>
+                )}
+                <ul className="list-none divide-y divide-[#30362e] overflow-hidden rounded-2xl border border-[#343a32] bg-[#171a17] p-0">
+                  {state.result.leads.slice(0, DRILLDOWN_RENDER_CAP).map((lead) => (
+                    <li key={lead.id} className="transition-colors hover:bg-[#1c201c]">
+                      <LeadListItem lead={lead} adminId={adminId} />
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )
+          })()}
         </div>
       </section>
     </div>

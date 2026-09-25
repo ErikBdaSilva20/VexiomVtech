@@ -51,7 +51,6 @@ export function LeadListSection({
 
       <section aria-label="Busca e filtros" className="mb-6 rounded-2xl border border-[#343a32] bg-[#171a17] p-5 sm:p-6">
         <Form action="/painel-8f2k/leads" method="get" className="gap-5">
-          <input type="hidden" name="section" value="list" />
           {filters.page_size !== 20 && <input type="hidden" name="page_size" value={filters.page_size} />}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(220px,0.7fr)_auto]">
             <FormField htmlFor="search" label="Buscar">

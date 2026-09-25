@@ -65,7 +65,13 @@ baseline_commit: '4eacd3bbf9fda35cba7cbecddf0863cb0506682d'
 
 ## Implementation Notes
 
-- Formal 3-layer subagent review (Blind Hunter / Edge Case Hunter / Verification Gap) was started then stopped by the user to conserve subagent token budget ahead of a Tuesday reset. In its place: the full diff was read and traced task-by-task against the spec's Code Map/Tasks by the coordinating session directly, `tsc`/`eslint`/`vitest` all passed clean (62 files, 473 tests), and the page was manually exercised in Chromium — confirmed no selector remains, all 3 sections render stacked, and clicking "SLA estourado" opens the drill-down instantly with the right leads (no network request).
+- Formal 3-layer subagent review (Blind Hunter / Edge Case Hunter / Verification Gap) was started then stopped by the user to conserve subagent token budget ahead of a Tuesday reset. In its place: the coordinating session performed the same review inline (no subagents), reading the full diff and every changed file directly. Findings:
+  - **patch** — `lead-dashboard.tsx`'s Visão geral date-filter form and `lead-list-section.tsx`'s search form both still had a leftover `<input type="hidden" name="section" value="...">` from the removed section-routing architecture (harmless — the server no longer reads `section` — but dead/confusing code). Removed both.
+  - **patch** — `lead-drilldown-panel.tsx` called `truncationNote(state.result.leads.length)` twice in the same render (condition + body) — trivial duplicate computation. Extracted to a single local `note` value.
+  - **false** — `getLeadRiskAlerts` now does `select("*")` instead of a 9-column projection, fetching full lead rows on every `/leads` page load. Not a defect: this is the explicit, documented Design Notes trade-off (reuse `LeadListItem` instead of a duplicate rendering path for risk-category drill-downs) that the spec itself calls for.
+  - **defer** — `page.tsx` has no dedicated test file (for either the old section-gated fetch or the new parallel `Promise.allSettled` fetch) — pre-existing gap, not introduced by this diff.
+  - All patches verified: `tsc`/`eslint`/`vitest` clean (62 files, 473 tests) after the fixes.
+  - Manual Chromium check: no selector remains, all 3 sections render stacked, clicking "SLA estourado" opens the drill-down instantly with the right leads (no network request).
 
 ## Design Notes
 
