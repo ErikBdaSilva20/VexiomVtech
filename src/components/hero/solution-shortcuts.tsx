@@ -24,7 +24,7 @@ export function SolutionShortcuts() {
       id="solucoes"
       aria-label="Soluções da Vexiom"
     >
-      <span className="absolute bottom-[calc(100%_+_10*var(--unit))] left-0 text-[#d4d7d2] text-[calc(9*var(--unit))] font-[650] tracking-[0.18em] uppercase">
+      <span className="absolute bottom-[calc(100%_+_14*var(--unit))] left-0 text-[#d4d7d2] text-[calc(9*var(--unit))] font-[650] tracking-[0.18em] uppercase">
         O que fazemos
       </span>
       {solutions.map((solution, index) => (
@@ -48,7 +48,7 @@ export function SolutionShortcuts() {
             <strong className="block text-[#f2f2f3] text-[calc(14*var(--unit))] font-[680] leading-[1.25] tracking-[-0.025em] group-hover:text-vexiom-yellow">
               {solution.title}
             </strong>
-            <small className="block mt-[calc(6*var(--unit))] text-[#979c96] text-[calc(11*var(--unit))] leading-[1.45]">
+            <small className="block mt-[calc(10*var(--unit))] text-[#979c96] text-[calc(11*var(--unit))] leading-[1.45]">
               {solution.description}
             </small>
           </span>

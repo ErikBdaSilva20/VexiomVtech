@@ -17,19 +17,19 @@ export function ProblemsSection() {
           </p>
           <h2
             id="problems-title"
-            className="mt-[calc(22*var(--unit))] text-[calc(32*var(--unit))] font-[750] leading-[1.08] tracking-[-0.05em] [@media(max-width:1100px)]:text-[26px] [@media(max-width:650px)]:text-[22px]"
+            className="mt-[calc(30*var(--unit))] text-[calc(32*var(--unit))] font-[750] leading-[1.08] tracking-[-0.05em] [@media(max-width:1100px)]:text-[26px] [@media(max-width:650px)]:text-[22px]"
           >
             Quatro sinais de que sua operação
             <br />
             <span className="text-vexiom-yellow">o improviso já custa caro.</span>
           </h2>
-          <p className="mt-[calc(26*var(--unit))] text-vexiom-gray-medium text-[calc(15*var(--unit))] leading-[calc(22*var(--unit))] [@media(max-width:650px)]:text-[13px]">
+          <p className="mt-[calc(42*var(--unit))] text-vexiom-gray-medium text-[calc(15*var(--unit))] leading-[calc(22*var(--unit))] [@media(max-width:650px)]:text-[13px] [@media(max-width:650px)]:leading-[1.5]">
             Antes de falar de soluções, vale entender onde a tecnologia mal
             aplicada custa tempo, vendas e organização no dia a dia do seu
             negócio.
           </p>
         </div>
-        <p className="mt-[calc(48*var(--unit))] mb-[calc(24*var(--unit))] text-[calc(13*var(--unit))] font-semibold text-vexiom-gray-medium tracking-[-0.02em]">
+        <p className="mt-[calc(56*var(--unit))] mb-[calc(28*var(--unit))] text-[calc(13*var(--unit))] font-semibold text-vexiom-gray-medium tracking-[-0.02em]">
           Você reconhece algum destes sinais?
         </p>
         <div className="grid grid-cols-2 gap-x-[calc(24*var(--unit))] gap-y-[calc(20*var(--unit))] [@media(max-width:1100px)]:gap-[20px] [@media(max-width:650px)]:grid-cols-1 [@media(max-width:650px)]:gap-[16px]">
@@ -42,7 +42,7 @@ export function ProblemsSection() {
             O problema quase nunca é falta de tecnologia.{" "}
             <span className="text-vexiom-yellow">É tecnologia sem direção.</span>
           </p>
-          <p className="mt-[calc(12*var(--unit))] max-w-[calc(520*var(--unit))] text-vexiom-gray-medium text-[calc(14*var(--unit))] leading-[calc(21*var(--unit))]">
+          <p className="mt-[calc(12*var(--unit))] max-w-[calc(520*var(--unit))] text-vexiom-gray-medium text-[calc(14*var(--unit))] leading-[1.5]">
             Entender onde a operação perde tempo e oportunidades é o primeiro
             passo para construir uma solução que realmente resolve, não
             apenas mais uma ferramenta.
