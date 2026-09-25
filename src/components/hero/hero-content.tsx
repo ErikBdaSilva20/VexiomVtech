@@ -10,19 +10,14 @@ export function HeroContent() {
       </p>
       <h1
         id="hero-title"
-        className="mt-[calc(32*var(--unit))] text-[calc(70*var(--unit))] font-extrabold leading-[0.93] tracking-[-0.067em] translate-y-[calc(4*var(--unit))] [@media(max-width:1100px)]:text-[clamp(53px,6.3vw,66px)] [@media(max-width:650px)]:mt-[38px] [@media(max-width:650px)]:text-[clamp(35px,8.55vw,53px)] [@media(max-width:650px)]:leading-[1] [@media(max-width:650px)]:tracking-[-0.065em] [@media(max-width:360px)]:text-[32px]"
+        className="mt-[calc(32*var(--unit))] text-[calc(70*var(--unit))] w-fit border-b border-b-[#363a36] pb-[calc(18*var(--unit))] font-extrabold leading-[0.88] tracking-[-0.067em] translate-y-[calc(4*var(--unit))] [@media(max-width:1100px)]:text-[clamp(53px,6.3vw,66px)] [@media(max-width:650px)]:mt-[38px] [@media(max-width:650px)]:text-[clamp(35px,8.55vw,53px)] [@media(max-width:650px)]:leading-[0.92] [@media(max-width:650px)]:tracking-[-0.065em] [@media(max-width:360px)]:text-[32px]"
       >
         <span className="block w-fit whitespace-nowrap bg-[linear-gradient(#fff_18%,#dedfe7_88%)] bg-clip-text [-webkit-text-fill-color:transparent] origin-left scale-x-[0.975]">
-          Tecnologia que resolve
+          Tecnologia que <br />resolve o que <br />
         </span>
-        <span className="block w-fit whitespace-nowrap bg-[linear-gradient(#fff_18%,#dedfe7_88%)] bg-clip-text [-webkit-text-fill-color:transparent] origin-left scale-x-[0.945]">
-          o que trava seu
-        </span>
-        <span className="block w-fit whitespace-nowrap text-vexiom-yellow tracking-[-0.078em] [@media(max-width:650px)]:tracking-[-0.075em]">
-          negócio.
-        </span>
+        <span className="block text-primary">atrasa seu negócio.</span>
       </h1>
-      <p className="mt-[calc(48*var(--unit))] mr-0 mb-0 ml-[calc(2*var(--unit))] text-vexiom-gray-medium text-[calc(15*var(--unit))] font-[450] leading-[calc(22*var(--unit))] tracking-[-0.035em] [@media(max-width:1100px)]:mt-[44px] [@media(max-width:1100px)]:text-[14px] [@media(max-width:1100px)]:leading-[22px] [@media(max-width:650px)]:mt-[40px] [@media(max-width:650px)]:ml-0 [@media(max-width:650px)]:text-[12px] [@media(max-width:650px)]:leading-[1.5] [@media(max-width:650px)]:[&_br]:hidden">
+      <p className="mt-[calc(64*var(--unit))] mr-0 mb-0 ml-[calc(2*var(--unit))] text-vexiom-gray-medium text-[calc(15*var(--unit))] font-[450] leading-[calc(22*var(--unit))] tracking-[-0.035em] [@media(max-width:1100px)]:mt-[56px] [@media(max-width:1100px)]:text-[14px] [@media(max-width:1100px)]:leading-[22px] [@media(max-width:650px)]:mt-[50px] [@media(max-width:650px)]:ml-0 [@media(max-width:650px)]:text-[12px] [@media(max-width:650px)]:leading-[1.5] [@media(max-width:650px)]:[&_br]:hidden">
         Criamos sites, sistemas, lojas virtuais e automações
         <br />
         sob medida para autônomos, pequenas empresas e startups.

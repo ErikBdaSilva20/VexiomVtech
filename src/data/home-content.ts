@@ -226,7 +226,7 @@ export const HOW_WE_WORK_FAQS: FaqItem[] = [
   {
     question: "E se eu não gostar do resultado no meio do caminho?",
     answer:
-      "Cada etapa é validada com você antes de avançar para a próxima, então ajustes acontecem ao longo da construção, não só no final.",
+      "Cada etapa é validada com você antes de avançar para a próxima, se mesmo assim você não gostar do resultado, podemos conversar novamente para realinharmos o escopo.",
   },
   {
     question: "Como funciona o pagamento?",
