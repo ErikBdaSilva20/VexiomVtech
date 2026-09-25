@@ -30,13 +30,19 @@ export function AdminNav({
               prefetch={false}
               aria-current={active === item.section ? "page" : undefined}
               className={
-                "inline-flex min-h-11 items-center border-b-2 px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#fbd020] " +
-                (active === item.section
-                  ? "border-[#fbd020] text-[#fbd020]"
-                  : "border-transparent text-[#a6a7a0] hover:text-white")
+                "inline-flex min-h-11 items-center px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#fbd020] " +
+                (active === item.section ? "text-[#fbd020]" : "text-[#a6a7a0] hover:text-white")
               }
             >
-              {item.label}
+              <span
+                className={
+                  active === item.section
+                    ? "underline decoration-2 underline-offset-[14px]"
+                    : "decoration-transparent"
+                }
+              >
+                {item.label}
+              </span>
             </Link>
           </li>
         ))}
