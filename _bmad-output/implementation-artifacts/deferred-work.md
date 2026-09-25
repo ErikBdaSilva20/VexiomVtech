@@ -46,3 +46,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-contratos-download-e-log-de-acesso.md`
   summary: Decide `ON DELETE` referential-action policy for `contract_access_log.contract_id`'s FK to `contracts.id` (currently `NO ACTION`, blocking any future contract delete once it has an access-log row).
   evidence: Blind Hunter review — same open class of issue as the existing Epic-1 deferred item on `admin_users`/`leads`/`projects` FKs. No epic ships a delete flow for `contracts` yet, so no live trigger path; needs a product decision (cascade vs. block), not a code guess.
+- source_spec: `_bmad-output/implementation-artifacts/spec-admin-dashboard-overview.md`
+  summary: Add loading.tsx/Suspense boundaries so the admin dashboard streams sections independently instead of blocking on the slowest of four data calls.
+  evidence: Blind Hunter review flagged this during the dashboard build. Real architectural improvement, but every existing admin page (contratos, financeiro, leads) shares the same synchronous full-page-fetch pattern today — not unique to the dashboard, and fixing it here alone would be inconsistent. Revisit as a codebase-wide admin data-fetching pattern change if page load times become a real complaint.

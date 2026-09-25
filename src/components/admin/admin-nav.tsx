@@ -2,9 +2,10 @@ import Link from "next/link"
 
 import type { AdminRole } from "@/lib/supabase/database.types"
 
-type Section = "leads" | "cases" | "projects" | "financeiro" | "contracts"
+type Section = "overview" | "leads" | "cases" | "projects" | "financeiro" | "contracts"
 
 const LINKS: { section: Section; label: string; href: string; superAdminOnly: boolean }[] = [
+  { section: "overview", label: "Visão geral", href: "/painel-8f2k", superAdminOnly: false },
   { section: "leads", label: "Leads", href: "/painel-8f2k/leads", superAdminOnly: false },
   { section: "cases", label: "Cases", href: "/painel-8f2k/cases", superAdminOnly: true },
   { section: "projects", label: "Projetos", href: "/painel-8f2k/projetos", superAdminOnly: true },
