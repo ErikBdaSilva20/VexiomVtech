@@ -27,7 +27,7 @@ function isActive(pathname: string, href: string): boolean {
 }
 
 const desktopLinkClassName =
-  "relative flex items-center h-full pt-[calc(10*var(--unit))] text-[calc(12.5*var(--unit))] font-[550] tracking-[-0.045em] whitespace-nowrap hover:text-vexiom-yellow aria-[current=page]:after:content-[''] aria-[current=page]:after:absolute aria-[current=page]:after:left-0 aria-[current=page]:after:bottom-[calc(14*var(--unit))] aria-[current=page]:after:w-[calc(33*var(--unit))] aria-[current=page]:after:h-[calc(2*var(--unit))] aria-[current=page]:after:bg-vexiom-yellow"
+  "relative flex items-center h-full pt-[calc(10*var(--unit))] text-[calc(12.5*var(--unit))] font-[550] tracking-[-0.045em] whitespace-nowrap hover:text-vexiom-yellow aria-[current=page]:after:content-[''] aria-[current=page]:after:absolute aria-[current=page]:after:left-0 aria-[current=page]:after:bottom-[calc(14*var(--unit))] aria-[current=page]:after:w-full aria-[current=page]:after:h-[calc(2*var(--unit))] aria-[current=page]:after:bg-vexiom-yellow"
 
 const mobileLinkClassName =
   "[@media(max-width:1100px)]:block [@media(max-width:1100px)]:p-[12px] [@media(max-width:1100px)]:text-[13px] [@media(max-width:1100px)]:hover:text-vexiom-yellow [@media(max-width:1100px)]:aria-[current=page]:text-vexiom-yellow"
