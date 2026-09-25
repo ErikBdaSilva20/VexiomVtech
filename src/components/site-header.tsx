@@ -173,10 +173,10 @@ export function SiteHeader() {
             >
               <Image
                 className="brand-image"
-                src="/assets/vTechWhiteTransparent.png"
+                src="/assets/vexiomV.png"
                 alt="Vexiom"
-                width={200}
-                height={250}
+                width={1536}
+                height={1024}
                 priority
               />
             </Link>
