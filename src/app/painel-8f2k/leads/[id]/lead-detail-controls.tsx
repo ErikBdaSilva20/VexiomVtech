@@ -113,15 +113,37 @@ export function LeadDetailControls({
 }) {
   return (
     <div className="space-y-5">
-      <StatusForm key={lead.status} lead={lead} />
       <NextActionForm key={[lead.next_action ?? "", lead.next_action_at ?? ""].join("|")} lead={lead} />
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <ProbabilityForm key={lead.probability ?? ""} lead={lead} />
-        <TagsForm key={(lead.tags ?? []).join("|")} lead={lead} />
-      </div>
-      {lead.status === "nao_convertido" && <NonConversionForm key={lead.non_conversion_reason ?? ""} lead={lead} />}
-      <AssigneeForm key={lead.assigned_to ?? ""} lead={lead} admin={admin} />
-      {!lead.responded_at && <RespondedForm leadId={lead.id} />}
+
+      <section className="rounded-xl border border-[#292b28] bg-[#181916] p-5 sm:p-6">
+        <h2 className="text-base font-semibold text-white">Gestão comercial</h2>
+        <div className="mt-4">
+          <StatusForm key={lead.status} lead={lead} />
+        </div>
+        <div className="mt-6 border-t border-[#292b28] pt-6">
+          <ProbabilityForm key={lead.probability ?? ""} lead={lead} />
+        </div>
+        <div className="mt-6 border-t border-[#292b28] pt-6">
+          <AssigneeForm key={lead.assigned_to ?? ""} lead={lead} admin={admin} />
+        </div>
+        {lead.status === "nao_convertido" && (
+          <div className="mt-6 border-t border-amber-900/50 pt-6">
+            <NonConversionForm key={lead.non_conversion_reason ?? ""} lead={lead} />
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-xl border border-[#292b28] bg-[#181916] p-5 sm:p-6">
+        <h2 className="text-base font-semibold text-white">Tags &amp; retorno</h2>
+        <div className="mt-4">
+          <TagsForm key={(lead.tags ?? []).join("|")} lead={lead} />
+        </div>
+        {!lead.responded_at && (
+          <div className="mt-6 border-t border-[#292b28] pt-6">
+            <RespondedForm leadId={lead.id} />
+          </div>
+        )}
+      </section>
     </div>
   )
 }
@@ -130,9 +152,9 @@ function StatusForm({ lead }: { lead: LeadControls }) {
   const [state, action, pending] = useActionState(updateLeadStatus, undefined)
   useRefreshAfterMutation(state)
   return (
-    <section className="rounded-xl border border-[#292b28] bg-[#181916] p-5 sm:p-6">
-      <h2 className="text-base font-semibold text-white">Etapa comercial</h2>
-      <Form action={action} className="mt-4 gap-3 sm:flex-row sm:items-end">
+    <div>
+      <h3 className="text-sm font-medium text-[#c7c7c0]">Etapa comercial</h3>
+      <Form action={action} className="mt-3 gap-3 sm:flex-row sm:items-end">
         <input type="hidden" name="lead_id" value={lead.id} />
         <input type="hidden" name="expected_status" value={lead.status} />
         <FormField htmlFor="lead-status" label="Status atual">
@@ -140,12 +162,12 @@ function StatusForm({ lead }: { lead: LeadControls }) {
             {LEAD_STATUS_OPTIONS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
           </FormSelect>
         </FormField>
-        <FormSubmitButton disabled={pending} className="mt-0 w-full self-stretch sm:w-auto sm:min-w-[150px] sm:self-end">
+        <FormSubmitButton disabled={pending} className="mt-0 w-full self-stretch sm:w-auto sm:self-end">
           {pending ? "Salvando..." : "Atualizar status"}
         </FormSubmitButton>
       </Form>
       <div className="mt-3"><ActionFeedback state={state} success="Status atualizado." /></div>
-    </section>
+    </div>
   )
 }
 
@@ -179,9 +201,9 @@ function ProbabilityForm({ lead }: { lead: LeadControls }) {
   const [state, action, pending] = useActionState(updateLeadProbability, undefined)
   useRefreshAfterMutation(state)
   return (
-    <section className="rounded-xl border border-[#292b28] bg-[#181916] p-5 sm:p-6">
-      <h2 className="text-base font-semibold text-white">Probabilidade</h2>
-      <Form action={action} className="mt-4 gap-3">
+    <div>
+      <h3 className="text-sm font-medium text-[#c7c7c0]">Probabilidade</h3>
+      <Form action={action} className="mt-3 gap-3">
         <input type="hidden" name="lead_id" value={lead.id} />
         <FormField htmlFor="lead-probability" label="Chance de fechar">
           <FormSelect id="lead-probability" name="probability" defaultValue={lead.probability ?? ""}>
@@ -194,7 +216,7 @@ function ProbabilityForm({ lead }: { lead: LeadControls }) {
         <FormSubmitButton disabled={pending} className="mt-0 w-full self-stretch sm:self-start">{pending ? "Salvando..." : "Salvar probabilidade"}</FormSubmitButton>
         <ActionFeedback state={state} success="Probabilidade atualizada." />
       </Form>
-    </section>
+    </div>
   )
 }
 
@@ -204,9 +226,9 @@ function TagsForm({ lead }: { lead: LeadControls }) {
   const tags = text.split(",").map((tag) => tag.trim()).filter(Boolean)
   useRefreshAfterMutation(state)
   return (
-    <section className="rounded-xl border border-[#292b28] bg-[#181916] p-5 sm:p-6">
-      <h2 className="text-base font-semibold text-white">Tags</h2>
-      <Form action={action} className="mt-4 gap-3">
+    <div>
+      <h3 className="text-sm font-medium text-[#c7c7c0]">Tags</h3>
+      <Form action={action} className="mt-3 gap-3">
         <input type="hidden" name="lead_id" value={lead.id} />
         {tags.map((tag, index) => <input key={index} type="hidden" name="tags" value={tag} />)}
         <FormField htmlFor="lead-tags" label="Separe as tags por vírgula">
@@ -215,7 +237,7 @@ function TagsForm({ lead }: { lead: LeadControls }) {
         <FormSubmitButton disabled={pending} className="mt-0 w-full self-stretch sm:self-start">{pending ? "Salvando..." : "Salvar tags"}</FormSubmitButton>
         <ActionFeedback state={state} success="Tags atualizadas." />
       </Form>
-    </section>
+    </div>
   )
 }
 
@@ -223,9 +245,9 @@ function NonConversionForm({ lead }: { lead: LeadControls }) {
   const [state, action, pending] = useActionState(updateLeadNonConversionReason, undefined)
   useRefreshAfterMutation(state)
   return (
-    <section className="rounded-xl border border-amber-900/50 bg-amber-950/15 p-5 sm:p-6">
-      <h2 className="text-base font-semibold text-white">Motivo da não conversão</h2>
-      <Form action={action} className="mt-4 gap-3">
+    <div>
+      <h3 className="text-sm font-medium text-amber-200">Motivo da não conversão</h3>
+      <Form action={action} className="mt-3 gap-3">
         <input type="hidden" name="lead_id" value={lead.id} />
         <FormField htmlFor="non-conversion-reason" label="Registrar motivo">
           <FormTextarea id="non-conversion-reason" name="non_conversion_reason" rows={3} maxLength={5000} defaultValue={lead.non_conversion_reason ?? ""} />
@@ -233,7 +255,7 @@ function NonConversionForm({ lead }: { lead: LeadControls }) {
         <FormSubmitButton disabled={pending} className="mt-0 w-full self-stretch sm:w-auto sm:self-start">{pending ? "Salvando..." : "Salvar motivo"}</FormSubmitButton>
         <ActionFeedback state={state} success="Motivo atualizado." />
       </Form>
-    </section>
+    </div>
   )
 }
 
@@ -241,10 +263,10 @@ function AssigneeForm({ lead, admin }: { lead: LeadControls; admin: AdminInfo })
   const [state, action, pending] = useActionState(updateLeadAssignee, undefined)
   useRefreshAfterMutation(state)
   return (
-    <section className="rounded-xl border border-[#292b28] bg-[#181916] p-5 sm:p-6">
-      <h2 className="text-base font-semibold text-white">Responsável</h2>
+    <div>
+      <h3 className="text-sm font-medium text-[#c7c7c0]">Responsável</h3>
       <p className="mt-1 text-xs leading-5 text-[#999]">Você pode atribuir a si mesmo ou deixar sem responsável. A lista completa da equipe ainda não está disponível para esta tela.</p>
-      <Form action={action} className="mt-4 gap-3 sm:flex-row sm:items-end">
+      <Form action={action} className="mt-3 gap-3 sm:flex-row sm:items-end">
         <input type="hidden" name="lead_id" value={lead.id} />
         <input type="hidden" name="expected_assigned_to" value={lead.assigned_to ?? ""} />
         <FormField htmlFor="lead-assignee" label="Atribuir para">
@@ -254,10 +276,10 @@ function AssigneeForm({ lead, admin }: { lead: LeadControls; admin: AdminInfo })
             <option value={admin.id}>Você{admin.name ? " · " + admin.name : ""}</option>
           </FormSelect>
         </FormField>
-        <FormSubmitButton disabled={pending} className="mt-0 w-full self-stretch sm:w-auto sm:min-w-[150px] sm:self-end">{pending ? "Salvando..." : "Salvar responsável"}</FormSubmitButton>
+        <FormSubmitButton disabled={pending} className="mt-0 w-full self-stretch sm:w-auto sm:self-end">{pending ? "Salvando..." : "Salvar responsável"}</FormSubmitButton>
       </Form>
       <div className="mt-3"><ActionFeedback state={state} success="Responsável atualizado." /></div>
-    </section>
+    </div>
   )
 }
 
@@ -265,9 +287,9 @@ function RespondedForm({ leadId }: { leadId: string }) {
   const [state, action, pending] = useActionState(markLeadResponded, undefined)
   useRefreshAfterMutation(state)
   return (
-    <section className="flex flex-col gap-3 rounded-xl border border-[#292b28] bg-[#181916] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h2 className="text-base font-semibold text-white">Retorno ao cliente</h2>
+        <h3 className="text-sm font-medium text-[#c7c7c0]">Retorno ao cliente</h3>
         <p className="mt-1 text-xs text-[#999]">Marque quando a equipe já tiver respondido.</p>
         <ActionFeedback state={state} success="Lead marcado como respondido." />
       </div>
@@ -275,7 +297,7 @@ function RespondedForm({ leadId }: { leadId: string }) {
         <input type="hidden" name="lead_id" value={leadId} />
         <FormSubmitButton disabled={pending} className="mt-0 w-full self-stretch sm:w-auto">{pending ? "Salvando..." : "Marcar respondido"}</FormSubmitButton>
       </Form>
-    </section>
+    </div>
   )
 }
 
