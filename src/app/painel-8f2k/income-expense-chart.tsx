@@ -5,6 +5,14 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 import { formatMonth } from "./format-month"
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })
+// Compact notation ("R$ 12 mil") keeps axis ticks short regardless of how large the
+// values get — the exact figure is still available in the tooltip.
+const moneyCompact = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  notation: "compact",
+  maximumFractionDigits: 1,
+})
 
 export function IncomeExpenseChart({
   data,
@@ -23,14 +31,16 @@ export function IncomeExpenseChart({
             tick={{ fill: "#a6a7a0", fontSize: 12 }}
             tickLine={false}
             axisLine={{ stroke: "#292b28" }}
+            interval="preserveStartEnd"
+            minTickGap={16}
           />
           <YAxis
             stroke="#54554a"
             tick={{ fill: "#a6a7a0", fontSize: 12 }}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value) => money.format(Number(value))}
-            width={72}
+            tickFormatter={(value) => moneyCompact.format(Number(value))}
+            width={64}
           />
           <Tooltip
             formatter={(value: unknown) => money.format(Number(value))}

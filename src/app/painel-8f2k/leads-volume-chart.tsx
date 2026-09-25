@@ -4,6 +4,8 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 
 import { formatMonth } from "./format-month"
 
+const count = new Intl.NumberFormat("pt-BR")
+
 export function LeadsVolumeChart({
   data,
 }: {
@@ -21,6 +23,8 @@ export function LeadsVolumeChart({
             tick={{ fill: "#a6a7a0", fontSize: 12 }}
             tickLine={false}
             axisLine={{ stroke: "#292b28" }}
+            interval="preserveStartEnd"
+            minTickGap={16}
           />
           <YAxis
             stroke="#54554a"
@@ -28,10 +32,12 @@ export function LeadsVolumeChart({
             tickLine={false}
             axisLine={false}
             allowDecimals={false}
-            width={32}
+            tickFormatter={(value) => count.format(Number(value))}
+            width={44}
           />
           <Tooltip
             labelFormatter={formatMonth}
+            formatter={(value: unknown) => count.format(Number(value))}
             contentStyle={{ background: "#181916", border: "1px solid #292b28", borderRadius: 8, color: "#f1f1ed" }}
           />
           <Line

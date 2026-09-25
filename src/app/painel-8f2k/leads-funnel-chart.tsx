@@ -1,6 +1,6 @@
 "use client"
 
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
 import type { LeadStatus } from "@/lib/leads/lead-status"
 
@@ -37,6 +37,8 @@ const TERMINAL_COLOR: Record<string, string> = {
   nao_convertido: "#f87171",
 }
 
+const count = new Intl.NumberFormat("pt-BR")
+
 export function LeadsFunnelChart({
   funnel,
 }: {
@@ -53,16 +55,11 @@ export function LeadsFunnelChart({
   return (
     <div role="img" aria-label="Gráfico de barras: leads por status">
       <ResponsiveContainer width="100%" height={data.length * rowHeight}>
-        <BarChart data={data} layout="vertical" margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 8, right: 40, left: 0, bottom: 0 }}>
           <CartesianGrid stroke="#292b28" horizontal={false} />
-          <XAxis
-            type="number"
-            allowDecimals={false}
-            stroke="#54554a"
-            tick={{ fill: "#a6a7a0", fontSize: 12 }}
-            tickLine={false}
-            axisLine={false}
-          />
+          {/* Exact values are shown via LabelList at each bar's end, not by reading this axis — stays
+              legible regardless of how large a status's count grows. */}
+          <XAxis type="number" allowDecimals={false} hide />
           <YAxis
             type="category"
             dataKey="label"
@@ -75,12 +72,20 @@ export function LeadsFunnelChart({
           />
           <Tooltip
             labelFormatter={(_, payload) => payload?.[0]?.payload?.fullLabel ?? ""}
+            formatter={(value: unknown) => count.format(Number(value))}
             contentStyle={{ background: "#181916", border: "1px solid #292b28", borderRadius: 8, color: "#f1f1ed" }}
           />
           <Bar dataKey="count" name="Leads" radius={[0, 4, 4, 0]} maxBarSize={18}>
             {data.map((entry) => (
               <Cell key={entry.status} fill={TERMINAL_COLOR[entry.status] ?? "#fbd020"} />
             ))}
+            <LabelList
+              dataKey="count"
+              position="right"
+              formatter={(value: unknown) => count.format(Number(value))}
+              fill="#f1f1ed"
+              fontSize={12}
+            />
           </Bar>
         </BarChart>
       </ResponsiveContainer>

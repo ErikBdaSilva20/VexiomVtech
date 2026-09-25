@@ -22,6 +22,8 @@ export const metadata: Metadata = {
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
 const percent = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 })
+// Grouped thousand separators keep counts legible as they grow (e.g. "1.234" not "1234").
+const count = new Intl.NumberFormat("pt-BR")
 
 function ErrorState({ message }: { message: string }) {
   return (
@@ -102,7 +104,7 @@ export default async function PainelIndexPage() {
           ) : (
             <>
               <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Leads no período" value={String(overview.totalLeads)} />
+                <StatCard label="Leads no período" value={count.format(overview.totalLeads)} />
                 <StatCard
                   label="Taxa de conversão"
                   value={percent.format(overview.conversionRate)}
@@ -110,11 +112,11 @@ export default async function PainelIndexPage() {
                 />
                 <StatCard
                   label="Contratos fechados"
-                  value={String(overview.funnel.contrato_fechado)}
+                  value={count.format(overview.funnel.contrato_fechado)}
                 />
                 <StatCard
                   label="Follow-up pendente"
-                  value={String(overview.funnel.follow_up_pendente)}
+                  value={count.format(overview.funnel.follow_up_pendente)}
                 />
               </div>
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -191,7 +193,7 @@ export default async function PainelIndexPage() {
               <ErrorState message="Não foi possível carregar os contratos agora." />
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:max-w-xs">
-                <StatCard label="Total de contratos" value={String(contracts.total)} />
+                <StatCard label="Total de contratos" value={count.format(contracts.total)} />
               </div>
             )}
           </section>
