@@ -59,6 +59,16 @@ export function buildRiskGroups(risk: LeadRiskAlerts | null): RiskGroup[] {
   ]
 }
 
+const APPOINTMENT_URGENT_WINDOW_MS = 60 * 60 * 1000
+
+/**
+ * Pure — an appointment is "urgent" once it's overdue or within 1h of `now`,
+ * "upcoming" otherwise. Exported for testing.
+ */
+export function appointmentUrgency(at: string, now: Date): "urgent" | "upcoming" {
+  return new Date(at).getTime() - now.getTime() <= APPOINTMENT_URGENT_WINDOW_MS ? "urgent" : "upcoming"
+}
+
 /** Pure — first/last calendar day (America/Sao_Paulo) of a "YYYY-MM" month. Exported for testing. */
 export function monthDateRange(month: string): { from: string; to: string } {
   const start = new Date(month + "-01T00:00:00Z")
@@ -292,12 +302,15 @@ export function LeadOverview({
 export function LeadAlerts({
   risk,
   agenda,
+  now,
   onOpenRisk,
 }: {
   risk: LeadRiskAlerts | null
   agenda: DailyAgendaAlerts | null
+  now: string
   onOpenRisk: (label: string, leads: LeadRow[]) => void
 }) {
+  const nowDate = new Date(now)
   const appointments = agenda
     ? [
         ...agenda.followUps.map((item) => ({
@@ -352,19 +365,26 @@ export function LeadAlerts({
             <h3 id="agenda-title" className="mt-1 text-lg font-semibold text-white">Compromissos que pedem ação</h3>
           </div>
           <ul className="grid list-none gap-px bg-[#39331d] p-0 md:grid-cols-2">
-            {appointments.map((item) => (
-              <li key={item.id} className="bg-[#1c1a12]">
-                <Link
-                  prefetch={false}
-                  href={"/painel-8f2k/leads/" + item.leadId}
-                  className="flex min-h-20 flex-col justify-center gap-1 px-5 py-4 transition hover:bg-[#252217] focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#fbd020] sm:px-6"
-                >
-                  <span className="text-xs font-semibold uppercase tracking-[0.1em] text-[#d9c66a]">{item.kind}</span>
-                  <span className="text-sm font-semibold text-white">{item.lead || "Lead"}</span>
-                  <time dateTime={item.at} className="text-xs text-[#b8b39e]">{formatDateTime(item.at)}</time>
-                </Link>
-              </li>
-            ))}
+            {appointments.map((item) => {
+              const urgent = appointmentUrgency(item.at, nowDate) === "urgent"
+              return (
+                <li key={item.id} className={"bg-[#1c1a12] border-l-4 " + (urgent ? "border-l-red-400" : "border-l-transparent")}>
+                  <Link
+                    prefetch={false}
+                    href={"/painel-8f2k/leads/" + item.leadId}
+                    className="flex min-h-20 flex-col justify-center gap-1 px-5 py-4 transition hover:bg-[#252217] focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#fbd020] sm:px-6"
+                  >
+                    <span className={"text-xs font-semibold uppercase tracking-[0.1em] " + (urgent ? "text-red-300" : "text-[#d9c66a]")}>
+                      {item.kind}{urgent ? " · agora" : ""}
+                    </span>
+                    <span className="text-sm font-semibold text-white">{item.lead || "Lead"}</span>
+                    <time dateTime={item.at} className={"text-xs " + (urgent ? "text-red-200" : "text-[#b8b39e]")}>
+                      {formatDateTime(item.at)}
+                    </time>
+                  </Link>
+                </li>
+              )
+            })}
           </ul>
         </section>
       )}
@@ -432,6 +452,7 @@ export function LeadOverviewAndAlerts({
   adminId,
   risk,
   agenda,
+  now,
 }: {
   overview: ProspectingOverview | null
   selectedDates: { from?: string; to?: string }
@@ -439,12 +460,13 @@ export function LeadOverviewAndAlerts({
   adminId: string
   risk: LeadRiskAlerts | null
   agenda: DailyAgendaAlerts | null
+  now: string
 }) {
   const drilldown = useLeadDrilldown()
 
   return (
     <>
-      <LeadAlerts risk={risk} agenda={agenda} onOpenRisk={drilldown.openWithLeads} />
+      <LeadAlerts risk={risk} agenda={agenda} now={now} onOpenRisk={drilldown.openWithLeads} />
 
       <div className="mt-10">
         <LeadOverview

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { buildRiskGroups, monthDateRange } from "./lead-dashboard"
+import { appointmentUrgency, buildRiskGroups, monthDateRange } from "./lead-dashboard"
 import type { LeadRiskAlerts } from "@/lib/leads/get-lead-risk-alerts"
 import type { Database } from "@/lib/supabase/database.types"
 
@@ -17,6 +17,26 @@ describe("monthDateRange", () => {
 
   it("handles a year-end month", () => {
     expect(monthDateRange("2026-12")).toEqual({ from: "2026-12-01", to: "2026-12-31" })
+  })
+})
+
+describe("appointmentUrgency", () => {
+  const now = new Date("2026-09-25T16:50:00.000Z")
+
+  it("is upcoming when more than 1h away", () => {
+    expect(appointmentUrgency("2026-09-25T19:00:00.000Z", now)).toBe("upcoming")
+  })
+
+  it("is urgent when within 1h", () => {
+    expect(appointmentUrgency("2026-09-25T17:00:00.000Z", now)).toBe("urgent")
+  })
+
+  it("is urgent exactly at the 1h boundary", () => {
+    expect(appointmentUrgency("2026-09-25T17:50:00.000Z", now)).toBe("urgent")
+  })
+
+  it("is urgent when already overdue", () => {
+    expect(appointmentUrgency("2026-09-25T16:00:00.000Z", now)).toBe("urgent")
   })
 })
 

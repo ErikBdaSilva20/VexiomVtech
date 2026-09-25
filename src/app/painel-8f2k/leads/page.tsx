@@ -104,6 +104,7 @@ export default async function LeadsPage({
             adminId={admin.id}
             risk={risk}
             agenda={agenda}
+            now={new Date().toISOString()}
           />
 
           <LeadListSection
