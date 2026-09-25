@@ -3,9 +3,8 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 
 import { AdminNav } from "@/components/admin/admin-nav"
-import { LeadAlerts, LeadOverview } from "@/components/leads/lead-dashboard"
+import { LeadOverviewAndAlerts } from "@/components/leads/lead-dashboard"
 import { LeadListSection } from "@/components/leads/lead-list-section"
-import { LeadSectionSelector, type LeadSection } from "@/components/leads/lead-section-selector"
 import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
 import { getDailyAgendaAlerts, type DailyAgendaAlerts } from "@/lib/leads/get-daily-agenda-alerts"
 import { getLeadRiskAlerts, type LeadRiskAlerts } from "@/lib/leads/get-lead-risk-alerts"
@@ -24,44 +23,6 @@ function one(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value
 }
 
-function parseSection(value: string | undefined): LeadSection {
-  if (value === "alerts" || value === "list") return value
-  return "overview"
-}
-
-function buildSectionHrefs({
-  dashboardDates,
-  filters,
-}: {
-  dashboardDates: { from?: string | null; to?: string | null }
-  filters: {
-    search?: string
-    status?: string
-    tag?: string
-    project_type?: string
-    assigned_to?: string
-    page_size: number
-  }
-}): Record<LeadSection, string> {
-  const overview = new URLSearchParams({ section: "overview" })
-  if (dashboardDates.from) overview.set("from", dashboardDates.from)
-  if (dashboardDates.to) overview.set("to", dashboardDates.to)
-
-  const list = new URLSearchParams({ section: "list" })
-  if (filters.search) list.set("search", filters.search)
-  if (filters.status) list.set("status", filters.status)
-  if (filters.tag) list.set("tag", filters.tag)
-  if (filters.project_type) list.set("project_type", filters.project_type)
-  if (filters.assigned_to) list.set("assigned_to", filters.assigned_to)
-  if (filters.page_size !== 20) list.set("page_size", String(filters.page_size))
-
-  return {
-    overview: "/painel-8f2k/leads?" + overview.toString(),
-    alerts: "/painel-8f2k/leads?section=alerts",
-    list: "/painel-8f2k/leads?" + list.toString(),
-  }
-}
-
 export default async function LeadsPage({
   searchParams,
 }: {
@@ -71,7 +32,6 @@ export default async function LeadsPage({
   if (!admin) redirect("/painel-8f2k/login")
 
   const raw = await searchParams
-  const section = parseSection(one(raw.section))
   const parsedDashboard = prospectingOverviewQuerySchema.safeParse({
     from: one(raw.from) || undefined,
     to: one(raw.to) || undefined,
@@ -90,46 +50,24 @@ export default async function LeadsPage({
   })
   const filters = parsedList.success ? parsedList.data : listLeadsQuerySchema.parse({})
 
-  let overview: ProspectingOverview | null = null
-  let risk: LeadRiskAlerts | null = null
-  let agenda: DailyAgendaAlerts | null = null
-  let result: ListLeadsResult | undefined
-  let listFailed = false
-
   const supabase = await createClient()
 
-  if (section === "overview") {
-    try {
-      overview = await getProspectingOverview(supabase, dashboardQuery)
-    } catch {
-      overview = null
-    }
-  }
+  // All three data sources are fetched together, every load — no section
+  // gating anymore, and each is independently try/caught (mirroring
+  // `/painel-8f2k`'s per-section isolation) so one failing source doesn't
+  // take the other two down with it.
+  const [overviewOutcome, riskOutcome, agendaOutcome, listOutcome] = await Promise.allSettled([
+    getProspectingOverview(supabase, dashboardQuery),
+    getLeadRiskAlerts(supabase),
+    getDailyAgendaAlerts(supabase),
+    listLeads(supabase, filters),
+  ])
 
-  if (section === "alerts") {
-    const [riskOutcome, agendaOutcome] = await Promise.allSettled([
-      getLeadRiskAlerts(supabase),
-      getDailyAgendaAlerts(supabase),
-    ])
-    risk = riskOutcome.status === "fulfilled" ? riskOutcome.value : null
-    agenda = agendaOutcome.status === "fulfilled" ? agendaOutcome.value : null
-  }
-
-  if (section === "list") {
-    try {
-      result = await listLeads(supabase, filters)
-    } catch {
-      listFailed = true
-    }
-  }
-
-  const sectionHrefs = buildSectionHrefs({
-    dashboardDates: {
-      from: overview?.from ?? dashboardQuery.from,
-      to: overview?.to ?? dashboardQuery.to,
-    },
-    filters,
-  })
+  const overview: ProspectingOverview | null = overviewOutcome.status === "fulfilled" ? overviewOutcome.value : null
+  const risk: LeadRiskAlerts | null = riskOutcome.status === "fulfilled" ? riskOutcome.value : null
+  const agenda: DailyAgendaAlerts | null = agendaOutcome.status === "fulfilled" ? agendaOutcome.value : null
+  const result: ListLeadsResult | undefined = listOutcome.status === "fulfilled" ? listOutcome.value : undefined
+  const listFailed = listOutcome.status === "rejected"
 
   return (
     <main className="min-h-screen bg-[#0c0e0c] px-4 py-6 text-[#f3f5f1] sm:px-8 sm:py-8 lg:px-12">
@@ -158,27 +96,23 @@ export default async function LeadsPage({
           </div>
         </header>
 
-        <LeadSectionSelector key={section} section={section} hrefs={sectionHrefs} />
-
-        {section === "overview" && (
-          <LeadOverview
+        <div className="space-y-10">
+          <LeadOverviewAndAlerts
             overview={overview}
             selectedDates={{ from: dashboardQuery.from ?? undefined, to: dashboardQuery.to ?? undefined }}
             invalidPeriod={!parsedDashboard.success}
             adminId={admin.id}
+            risk={risk}
+            agenda={agenda}
           />
-        )}
 
-        {section === "alerts" && <LeadAlerts risk={risk} agenda={agenda} />}
-
-        {section === "list" && (
           <LeadListSection
             result={result}
             failed={listFailed}
             filters={filters}
             adminId={admin.id}
           />
-        )}
+        </div>
       </div>
     </main>
   )

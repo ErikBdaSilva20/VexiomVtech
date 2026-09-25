@@ -15,11 +15,27 @@ function baseRow(overrides: Partial<Record<string, unknown>> = {}) {
     id: "lead-1",
     name: "Lead",
     company: null,
+    email: "lead@example.com",
+    whatsapp: "+5511999999999",
+    project_type: "site",
+    description: "Descrição do projeto",
+    desired_deadline: null,
+    budget_range: null,
+    preferred_channel: null,
+    preferred_time: null,
     status: "novo_lead",
+    assigned_to: null,
     created_at: "2026-09-24T12:00:00Z",
     viewed_at: null,
+    responded_at: null,
     next_action: null,
     next_action_at: null,
+    probability: null,
+    tags: null,
+    non_conversion_reason: null,
+    source: "site",
+    created_by: null,
+    possible_duplicate_of: null,
     last_interaction_at: null,
     ...overrides,
   }
@@ -99,6 +115,15 @@ describe("getLeadRiskAlerts", () => {
         expect(alerts.noNextAction).toEqual([])
         expect(alerts.overdueFollowUps).toEqual([])
         expect(alerts.coolingLeads).toEqual([])
+      }
+    )
+  })
+
+  it("returns the full lead row (not a narrow projection) so drill-downs can reuse LeadListItem", () => {
+    return runAndExpect(
+      [baseRow({ id: "old", created_at: "2026-09-21T12:00:00Z", viewed_at: null, email: "someone@example.com", whatsapp: "+5511988887777" })],
+      (alerts) => {
+        expect(alerts.slaBreached[0]).toMatchObject({ id: "old", email: "someone@example.com", whatsapp: "+5511988887777" })
       }
     )
   })

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { monthDateRange } from "./lead-dashboard"
+import { buildRiskGroups, monthDateRange } from "./lead-dashboard"
+import type { LeadRiskAlerts } from "@/lib/leads/get-lead-risk-alerts"
+import type { Database } from "@/lib/supabase/database.types"
+
+type LeadRow = Database["public"]["Tables"]["leads"]["Row"]
 
 describe("monthDateRange", () => {
   it("returns the first and last calendar day of a regular month", () => {
@@ -13,5 +17,37 @@ describe("monthDateRange", () => {
 
   it("handles a year-end month", () => {
     expect(monthDateRange("2026-12")).toEqual({ from: "2026-12-01", to: "2026-12-31" })
+  })
+})
+
+function lead(id: string): LeadRow {
+  return { id } as LeadRow
+}
+
+describe("buildRiskGroups", () => {
+  it("returns an empty array when risk failed to load", () => {
+    expect(buildRiskGroups(null)).toEqual([])
+  })
+
+  it("maps each of the four risk categories to its label and leads, preserving counts", () => {
+    const risk: LeadRiskAlerts = {
+      slaBreached: [lead("a"), lead("b")],
+      noNextAction: [lead("c")],
+      overdueFollowUps: [],
+      coolingLeads: [lead("d"), lead("e"), lead("f")],
+    }
+
+    const groups = buildRiskGroups(risk)
+
+    expect(groups.map((group) => group.label)).toEqual([
+      "SLA estourado",
+      "Sem próxima ação",
+      "Follow-ups vencidos",
+      "Leads esfriando",
+    ])
+    expect(groups.find((group) => group.label === "SLA estourado")?.items).toBe(risk.slaBreached)
+    expect(groups.find((group) => group.label === "Sem próxima ação")?.items).toHaveLength(1)
+    expect(groups.find((group) => group.label === "Follow-ups vencidos")?.items).toHaveLength(0)
+    expect(groups.find((group) => group.label === "Leads esfriando")?.items).toHaveLength(3)
   })
 })

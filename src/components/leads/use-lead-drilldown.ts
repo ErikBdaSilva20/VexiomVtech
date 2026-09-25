@@ -3,17 +3,22 @@
 import { useCallback, useRef, useState } from "react"
 
 import type { ListLeadsResult } from "@/lib/leads/list-leads"
+import type { Database } from "@/lib/supabase/database.types"
+
+type LeadRow = Database["public"]["Tables"]["leads"]["Row"]
 
 /**
  * A slice of the leads overview a user can drill into — one variant per
  * clickable panel in `LeadOverview` (Funil por etapa / Tipos de projeto /
- * Leads recebidos por mês). Generic over the three kinds rather than three
- * separate hooks, per the spec's "reusable abstraction" constraint.
+ * Leads recebidos por mês), plus `leads` for a pre-loaded set (the Alertas
+ * risk-category cards). Generic over the kinds rather than separate hooks,
+ * per the spec's "reusable abstraction" constraint.
  */
 export type LeadDrilldownSlice =
   | { kind: "status"; value: string; label: string }
   | { kind: "project_type"; value: string; label: string }
   | { kind: "month"; from: string; to: string; label: string }
+  | { kind: "leads"; label: string }
 
 export type LeadDrilldownState =
   | { status: "closed" }
@@ -34,6 +39,20 @@ export function drilldownSliceToParams(slice: LeadDrilldownSlice): URLSearchPara
     params.set("to", slice.to)
   }
   return params
+}
+
+/**
+ * Pure — the `success` state `openWithLeads` commits for a pre-loaded set
+ * of leads (no fetch). Exported for testing: this project's vitest config
+ * has no DOM environment, so the hook's non-fetch branch is exercised
+ * through this pure builder rather than by rendering the hook.
+ */
+export function buildLeadsSuccessState(label: string, leads: LeadRow[]): LeadDrilldownState {
+  return {
+    status: "success",
+    slice: { kind: "leads", label },
+    result: { leads, total: leads.length, page: 1, pageSize: leads.length || 1 },
+  }
 }
 
 /**
@@ -69,10 +88,23 @@ export function useLeadDrilldown() {
     })()
   }, [])
 
+  /**
+   * Opens the panel with leads already loaded in full (no HTTP call) — used
+   * by the Alertas risk-category cards, whose leads come from
+   * `getLeadRiskAlerts` (already fetched once on `page.tsx`). Re-fetching
+   * them through the `/drill-down-leads` route would mean duplicating that
+   * risk-derivation logic as a new `listLeads` filter, which the spec
+   * explicitly avoids.
+   */
+  const openWithLeads = useCallback((label: string, leads: LeadRow[]) => {
+    latestRequestId.current++
+    setState(buildLeadsSuccessState(label, leads))
+  }, [])
+
   const close = useCallback(() => {
     latestRequestId.current++
     setState({ status: "closed" })
   }, [])
 
-  return { state, open, close }
+  return { state, open, openWithLeads, close }
 }

@@ -10,8 +10,54 @@ import type { DailyAgendaAlerts } from "@/lib/leads/get-daily-agenda-alerts"
 import type { LeadRiskAlerts } from "@/lib/leads/get-lead-risk-alerts"
 import type { ProspectingOverview } from "@/lib/leads/get-prospecting-overview"
 import { LEAD_STATUSES } from "@/lib/leads/lead-status"
+import type { Database } from "@/lib/supabase/database.types"
+
+type LeadRow = Database["public"]["Tables"]["leads"]["Row"]
 
 type NamedCount = { label: string; count: number; slice: LeadDrilldownSlice }
+
+export type RiskGroup = { label: string; detail: string; items: LeadRow[]; accent: string; count: string }
+
+/**
+ * Pure — maps `getLeadRiskAlerts`'s four risk categories to the copy/style
+ * each clickable count card needs. Exported for testing so the card
+ * labels/counts can be asserted without rendering the component (this
+ * project's vitest config has no DOM environment — see
+ * `lead-drilldown-panel.test.ts`).
+ */
+export function buildRiskGroups(risk: LeadRiskAlerts | null): RiskGroup[] {
+  if (!risk) return []
+  return [
+    {
+      label: "SLA estourado",
+      detail: "Ainda não visualizados após 12 horas úteis.",
+      items: risk.slaBreached,
+      accent: "border-l-red-400",
+      count: "text-red-200",
+    },
+    {
+      label: "Sem próxima ação",
+      detail: "Leads ativos sem um acompanhamento definido.",
+      items: risk.noNextAction,
+      accent: "border-l-amber-300",
+      count: "text-amber-200",
+    },
+    {
+      label: "Follow-ups vencidos",
+      detail: "Ações programadas para uma data que já passou.",
+      items: risk.overdueFollowUps,
+      accent: "border-l-orange-300",
+      count: "text-orange-200",
+    },
+    {
+      label: "Leads esfriando",
+      detail: "Sem interação registrada há mais de cinco dias.",
+      items: risk.coolingLeads,
+      accent: "border-l-sky-300",
+      count: "text-sky-200",
+    },
+  ]
+}
 
 /** Pure — first/last calendar day (America/Sao_Paulo) of a "YYYY-MM" month. Exported for testing. */
 export function monthDateRange(month: string): { from: string; to: string } {
@@ -97,15 +143,13 @@ export function LeadOverview({
   overview,
   selectedDates,
   invalidPeriod,
-  adminId,
+  onRowClick,
 }: {
   overview: ProspectingOverview | null
   selectedDates: { from?: string; to?: string }
   invalidPeriod: boolean
-  adminId: string
+  onRowClick: (slice: LeadDrilldownSlice) => void
 }) {
-  const drilldown = useLeadDrilldown()
-
   const funnel = overview
     ? LEAD_STATUSES.map((status) => ({
         label: LEAD_STATUS_LABELS[status],
@@ -224,26 +268,24 @@ export function LeadOverview({
             title="Funil por etapa"
             description="Quantidade de oportunidades em cada momento comercial."
             rows={funnel}
-            onRowClick={drilldown.open}
+            onRowClick={onRowClick}
           />
           <CountPanel
             title="Tipos de projeto"
             description="Demandas mais procuradas pelos contatos recebidos."
             rows={projectTypes}
-            onRowClick={drilldown.open}
+            onRowClick={onRowClick}
           />
           <div className="xl:col-span-2">
             <CountPanel
               title="Leads recebidos por mês"
               description="Histórico mensal dentro do período selecionado."
               rows={monthlyVolume}
-              onRowClick={drilldown.open}
+              onRowClick={onRowClick}
             />
           </div>
         </div>
       )}
-
-      <LeadDrilldownPanel state={drilldown.state} close={drilldown.close} adminId={adminId} />
     </section>
   )
 }
@@ -251,9 +293,11 @@ export function LeadOverview({
 export function LeadAlerts({
   risk,
   agenda,
+  onOpenRisk,
 }: {
   risk: LeadRiskAlerts | null
   agenda: DailyAgendaAlerts | null
+  onOpenRisk: (label: string, leads: LeadRow[]) => void
 }) {
   const appointments = agenda
     ? [
@@ -274,37 +318,8 @@ export function LeadAlerts({
       ].sort((left, right) => left.at.localeCompare(right.at))
     : []
 
-  const riskGroups = risk ? [
-    {
-      label: "SLA estourado",
-      detail: "Ainda não visualizados após 12 horas úteis.",
-      items: risk.slaBreached,
-      accent: "border-l-red-400",
-      count: "text-red-200",
-    },
-    {
-      label: "Sem próxima ação",
-      detail: "Leads ativos sem um acompanhamento definido.",
-      items: risk.noNextAction,
-      accent: "border-l-amber-300",
-      count: "text-amber-200",
-    },
-    {
-      label: "Follow-ups vencidos",
-      detail: "Ações programadas para uma data que já passou.",
-      items: risk.overdueFollowUps,
-      accent: "border-l-orange-300",
-      count: "text-orange-200",
-    },
-    {
-      label: "Leads esfriando",
-      detail: "Sem interação registrada há mais de cinco dias.",
-      items: risk.coolingLeads,
-      accent: "border-l-sky-300",
-      count: "text-sky-200",
-    },
-  ] : []
-  const visibleRiskGroups = riskGroups.filter((group) => group.items.length > 0)
+  const riskGroups = buildRiskGroups(risk)
+  const hasRiskAlerts = riskGroups.some((group) => group.items.length > 0)
   const alertCount = riskGroups.reduce((sum, group) => sum + group.items.length, 0)
   const urgentCount = risk ? risk.slaBreached.length + risk.overdueFollowUps.length : null
 
@@ -359,42 +374,41 @@ export function LeadAlerts({
         <p role="status" className="mt-6 rounded-xl border border-[#4d412c] bg-[#211d14] px-4 py-4 text-sm text-[#e0cfa8]">
           Os alertas de risco estão temporariamente indisponíveis.
         </p>
-      ) : visibleRiskGroups.length === 0 ? (
+      ) : !hasRiskAlerts ? (
         <section className="mt-6 rounded-2xl border border-emerald-900/70 bg-emerald-950/20 px-6 py-12 text-center">
           <p className="text-2xl" aria-hidden="true">✓</p>
           <h3 className="mt-2 text-lg font-semibold text-emerald-100">Nenhuma pendência crítica</h3>
           <p className="mt-2 text-sm text-[#adc4b3]">Os leads ativos estão dentro dos critérios de acompanhamento.</p>
         </section>
       ) : (
-        <div className="mt-6 space-y-4">
-          {visibleRiskGroups.map((group) => (
-            <section key={group.label} className={"rounded-2xl border border-[#343a32] border-l-4 bg-[#171a17] p-5 sm:p-6 " + group.accent}>
-              <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {riskGroups.map((group) => {
+            const clickable = group.items.length > 0
+            return (
+              <button
+                key={group.label}
+                type="button"
+                disabled={!clickable}
+                onClick={() => clickable && onOpenRisk(group.label, group.items)}
+                className={
+                  "flex min-h-[152px] min-w-0 flex-col justify-between rounded-2xl border border-[#343a32] border-l-4 bg-[#171a17] p-5 text-left transition sm:p-6 " +
+                  group.accent +
+                  (clickable
+                    ? " cursor-pointer hover:border-[#646d60] hover:bg-[#1d211c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020]"
+                    : " cursor-default opacity-60")
+                }
+              >
                 <div>
                   <h3 className="text-base font-semibold text-white">{group.label}</h3>
                   <p className="mt-1 text-sm leading-5 text-[#aab1a7]">{group.detail}</p>
                 </div>
-                <span className={"text-2xl font-semibold tabular-nums " + group.count}>{group.items.length}</span>
-              </div>
-              <ul className="mt-4 grid list-none gap-2 p-0 sm:grid-cols-2 xl:grid-cols-3">
-                {group.items.map((item) => (
-                  <li key={item.id}>
-                    <Link
-                      prefetch={false}
-                      href={"/painel-8f2k/leads/" + item.id}
-                      className="flex min-h-12 items-center justify-between gap-3 rounded-lg border border-[#343a32] bg-[#101210] px-4 py-3 text-sm text-[#e2e6df] transition hover:border-[#646d60] hover:bg-[#1d211c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020]"
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate font-medium">{item.name}</span>
-                        {item.company && <span className="mt-0.5 block truncate text-xs text-[#959d92]">{item.company}</span>}
-                      </span>
-                      <span aria-hidden="true" className="shrink-0 text-[#fbd020]">→</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+                <div className="mt-4 flex items-end justify-between">
+                  <span className={"text-3xl font-semibold tabular-nums " + group.count}>{group.items.length}</span>
+                  {clickable && <span aria-hidden="true" className="text-[#fbd020]">→</span>}
+                </div>
+              </button>
+            )
+          })}
         </div>
       )}
 
@@ -402,5 +416,47 @@ export function LeadAlerts({
         <p role="status" className="mt-4 text-sm text-[#c7b98e]">A agenda do dia não pôde ser carregada agora.</p>
       )}
     </section>
+  )
+}
+
+/**
+ * Alertas + Visão geral, stacked, sharing a single `useLeadDrilldown`
+ * instance and drill-down panel. Both sections are always mounted together
+ * on `/painel-8f2k/leads` now that the section selector is gone, so one
+ * hoisted instance (rather than one per section) is enough and avoids two
+ * modals fighting for the same escape-key/focus-trap behavior.
+ */
+export function LeadOverviewAndAlerts({
+  overview,
+  selectedDates,
+  invalidPeriod,
+  adminId,
+  risk,
+  agenda,
+}: {
+  overview: ProspectingOverview | null
+  selectedDates: { from?: string; to?: string }
+  invalidPeriod: boolean
+  adminId: string
+  risk: LeadRiskAlerts | null
+  agenda: DailyAgendaAlerts | null
+}) {
+  const drilldown = useLeadDrilldown()
+
+  return (
+    <>
+      <LeadAlerts risk={risk} agenda={agenda} onOpenRisk={drilldown.openWithLeads} />
+
+      <div className="mt-10">
+        <LeadOverview
+          overview={overview}
+          selectedDates={selectedDates}
+          invalidPeriod={invalidPeriod}
+          onRowClick={drilldown.open}
+        />
+      </div>
+
+      <LeadDrilldownPanel state={drilldown.state} close={drilldown.close} adminId={adminId} />
+    </>
   )
 }

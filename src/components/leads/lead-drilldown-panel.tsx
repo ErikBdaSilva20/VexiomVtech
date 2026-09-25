@@ -5,10 +5,20 @@ import { useEffect, useRef } from "react"
 import { LeadListItem } from "@/components/leads/lead-list-item"
 import type { LeadDrilldownSlice, LeadDrilldownState } from "@/components/leads/use-lead-drilldown"
 
+/** Exported for testing — see `truncationNote`. */
+export const DRILLDOWN_RENDER_CAP = 100
+
+/** Pure — the truncation note shown when a slice exceeds the render cap, or null otherwise. Exported for testing. */
+export function truncationNote(total: number): string | null {
+  if (total <= DRILLDOWN_RENDER_CAP) return null
+  return "Mostrando os primeiros " + DRILLDOWN_RENDER_CAP + " de " + total + " — refine pela lista de leads."
+}
+
 /** Pure — the panel's title for a given slice. Exported for testing. */
 export function drilldownTitle(slice: LeadDrilldownSlice): string {
   if (slice.kind === "status") return slice.label
   if (slice.kind === "project_type") return slice.label
+  if (slice.kind === "leads") return slice.label
   return "Leads de " + slice.label
 }
 
@@ -126,13 +136,20 @@ export function LeadDrilldownPanel({
           )}
 
           {state.status === "success" && state.result.leads.length > 0 && (
-            <ul className="list-none divide-y divide-[#30362e] overflow-hidden rounded-2xl border border-[#343a32] bg-[#171a17] p-0">
-              {state.result.leads.map((lead) => (
-                <li key={lead.id} className="transition-colors hover:bg-[#1c201c]">
-                  <LeadListItem lead={lead} adminId={adminId} />
-                </li>
-              ))}
-            </ul>
+            <>
+              {truncationNote(state.result.leads.length) && (
+                <p role="status" className="mb-4 rounded-lg border border-[#4d412c] bg-[#211d14] px-4 py-3 text-sm text-[#e0cfa8]">
+                  {truncationNote(state.result.leads.length)}
+                </p>
+              )}
+              <ul className="list-none divide-y divide-[#30362e] overflow-hidden rounded-2xl border border-[#343a32] bg-[#171a17] p-0">
+                {state.result.leads.slice(0, DRILLDOWN_RENDER_CAP).map((lead) => (
+                  <li key={lead.id} className="transition-colors hover:bg-[#1c201c]">
+                    <LeadListItem lead={lead} adminId={adminId} />
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </div>
       </section>

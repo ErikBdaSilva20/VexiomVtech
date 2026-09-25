@@ -10,17 +10,10 @@ import type { Database } from "@/lib/supabase/database.types"
 const SLA_BUSINESS_HOURS_THRESHOLD = 12
 const COOLING_DAYS_THRESHOLD = 5
 
-type RiskAlertRow = {
-  id: string
-  name: string
-  company: string | null
-  status: LeadStatus
-  created_at: string
-  viewed_at: string | null
-  next_action: string | null
-  next_action_at: string | null
-  last_interaction_at: string | null
-}
+// Full `leads` row (not a narrow projection) so risk-category drill-downs
+// can reuse `LeadListItem` as-is instead of a second, duplicate item
+// component (see `use-lead-drilldown.ts`'s `openWithLeads`).
+type RiskAlertRow = Database["public"]["Tables"]["leads"]["Row"]
 
 export type LeadRiskAlerts = {
   slaBreached: RiskAlertRow[]
@@ -45,7 +38,7 @@ export async function getLeadRiskAlerts(
 ): Promise<LeadRiskAlerts> {
   const { data, error } = await supabase
     .from("leads")
-    .select("id, name, company, status, created_at, viewed_at, next_action, next_action_at, last_interaction_at")
+    .select("*")
 
   if (error) {
     console.error("getLeadRiskAlerts: failed to load leads", error)
@@ -60,7 +53,7 @@ export async function getLeadRiskAlerts(
   }
 
   for (const row of (data ?? []) as RiskAlertRow[]) {
-    if (isTerminalLeadStatus(row.status)) continue
+    if (isTerminalLeadStatus(row.status as LeadStatus)) continue
 
     if (!row.viewed_at && businessHoursElapsed(new Date(row.created_at), now) > SLA_BUSINESS_HOURS_THRESHOLD) {
       alerts.slaBreached.push(row)
