@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
 
 import { HEADER_CTA, NAV_ITEMS } from "@/data/home-content"
 import { PrimaryNav } from "@/components/primary-nav"
@@ -21,6 +22,9 @@ export function SiteHeader() {
   const triggerRef = useRef<HTMLElement>(null)
   const headerRef = useRef<HTMLElement>(null)
   const [isPinned, setIsPinned] = useState(false)
+  const pathname = usePathname()
+  const router = useRouter()
+  const showBackButton = pathname !== "/"
 
   useEffect(() => {
     const header = headerRef.current
@@ -139,6 +143,28 @@ export function SiteHeader() {
             variant="desktop"
             className="flex items-center gap-[calc(43*var(--unit))] h-full [@media(max-width:1100px)]:hidden"
           />
+          {/* Subtle history-back shortcut - mobile only, and only once there's
+              somewhere to go back to (hidden on the home page itself). Sits
+              on the left, clear of the centered wordmark and the hamburger. */}
+          {showBackButton && (
+            <button
+              type="button"
+              onClick={() => router.back()}
+              aria-label="Voltar"
+              className="hidden [@media(max-width:650px)]:grid absolute left-[21px] top-1/2 z-10 h-[36px] w-[36px] -translate-y-1/2 place-items-center text-[#9a9d97] transition-colors hover:text-vexiom-yellow"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-[18px] w-[18px] fill-none stroke-current"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+          )}
           <details
             className="hidden [@media(max-width:1100px)]:relative [@media(max-width:1100px)]:block [@media(max-width:1100px)]:mt-[4px] [@media(max-width:650px)]:ml-auto"
             ref={menuRef}
@@ -163,13 +189,14 @@ export function SiteHeader() {
               elements above). Centered horizontally; vertical offset is
               hand-tuned so the mark's own V lines up with the notch.
               Below 1100px the notch is hidden, so the mark falls back to
-              simple centering (or left-aligned once the mobile menu takes
-              over the center-right area at 650px). */}
-          <div className="absolute left-1/2 top-[calc(24*var(--unit))] z-10 -translate-x-1/2 pointer-events-none [@media(max-width:1100px)]:top-1/2 [@media(max-width:1100px)]:-translate-y-1/2 [@media(max-width:650px)]:left-[21px] [@media(max-width:650px)]:translate-x-0">
+              simple centering - still centered at 650px too, now that the
+              wordmark replaces the compact "V" there (plenty of clearance
+              from the hamburger on the right). */}
+          <div className="absolute left-1/2 top-[calc(24*var(--unit))] z-10 -translate-x-1/2 pointer-events-none [@media(max-width:1100px)]:top-1/2 [@media(max-width:1100px)]:-translate-y-1/2">
             <Link
               href="/"
               aria-label="Vexiom, voltar ao início"
-              className="block w-[calc(100*var(--unit))] pointer-events-auto [@media(max-width:1100px)]:w-[50px] [@media(max-width:650px)]:w-[56px] [@media(max-width:360px)]:w-[46px]"
+              className="block w-[calc(100*var(--unit))] pointer-events-auto [@media(max-width:1100px)]:w-[50px] [@media(max-width:650px)]:hidden"
             >
               <Image
                 className="brand-image"
@@ -179,6 +206,23 @@ export function SiteHeader() {
                 height={1024}
                 priority
               />
+            </Link>
+            {/* Below 650px the compact "V" gives way to the full wordmark - the
+                mobile menu no longer competes for space with a wide nav, so there's
+                room, and it reads better than a lone glyph at a glance. */}
+            <Link
+              href="/"
+              aria-label="Vexiom, voltar ao início"
+              className="hidden pointer-events-auto [@media(max-width:650px)]:block [@media(max-width:650px)]:w-[208px] [@media(max-width:650px)]:translate-y-[7px] [@media(max-width:360px)]:w-[160px]"
+            >
+              <svg
+                className="w-full h-auto [aspect-ratio:680/110]"
+                viewBox="0 0 680 110"
+                role="img"
+                aria-label="Vexiom"
+              >
+                <use href="#brand-mark" width="680" height="110" />
+              </svg>
             </Link>
           </div>
           <ArrowLink

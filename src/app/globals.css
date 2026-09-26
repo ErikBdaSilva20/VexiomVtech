@@ -200,11 +200,18 @@ html {
   color: inherit;
   text-decoration: none;
 }
-.page :where(h1, h2, h3, p, dl, dd) {
-  margin: 0;
-}
-.page svg {
-  display: block;
+/* Layered so Tailwind utility classes (margin, display, etc. - including
+ * arbitrary responsive variants) can always override this reset. Unlayered
+ * CSS beats @layer'd utilities regardless of specificity, which silently
+ * ate margin-top/display utilities on h1/p/svg elements before this was
+ * layered (e.g. a mobile hero spacing tweak computed to 0px). */
+@layer base {
+  .page :where(h1, h2, h3, p, dl, dd) {
+    margin: 0;
+  }
+  .page svg {
+    display: block;
+  }
 }
 .page a,
 .page summary {
@@ -243,15 +250,21 @@ html {
   width: 100%;
   height: auto;
   pointer-events: none;
-  /* Mirror the first divider exactly: its left segment is at y705, then it
-   * drops 72px at 20deg to y731.2 before continuing to the right. */
+  /* Mirror the first divider exactly: its left segment sits higher, then it
+   * steps down to the right at the same 20deg drop as SectionDivider itself
+   * (both expressed as % of this element's own 1600x900 intrinsic box).
+   * Hero content is taller than the original tuning assumed (see
+   * hero-section.tsx), so these two y-levels were re-measured against the
+   * divider's actual on-page position rather than shifted by estimate -
+   * the right value in particular must land exactly on the divider's right
+   * (lower) segment, or the yellow accent line reads as broken/offset. */
   clip-path: polygon(
     0 0,
     100% 0,
-    100% 81.25%,
-    54.5% 81.25%,
-    50% 78.33%,
-    0 78.33%
+    100% 98.17%,
+    54.5% 98.17%,
+    50% 95%,
+    0 95%
   );
 }
 .skip-link {

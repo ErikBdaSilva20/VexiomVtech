@@ -2,7 +2,9 @@
 export function HeroVisual() {
   return (
     <>
-      <div className="absolute z-[1] top-[calc(-60*var(--unit))] left-[calc(838*var(--unit))] w-[calc(640*var(--unit))] [filter:drop-shadow(0_calc(5*var(--unit))_calc(4*var(--unit))_#0009)] [@media(max-width:1100px)]:top-auto [@media(max-width:1100px)]:bottom-[34px] [@media(max-width:1100px)]:left-auto [@media(max-width:1100px)]:right-[5%] [@media(max-width:1100px)]:w-[46%] [@media(max-width:650px)]:relative [@media(max-width:650px)]:left-auto [@media(max-width:650px)]:right-auto [@media(max-width:650px)]:bottom-auto [@media(max-width:650px)]:w-[84%] [@media(max-width:650px)]:mx-auto [@media(max-width:650px)]:mt-[42px] [@media(max-width:650px)]:mb-0">
+      {/* Hidden on mobile: the header now carries the full wordmark there instead
+          (see site-header.tsx), so repeating it here would just be noise. */}
+      <div className="absolute z-[1] top-[calc(-60*var(--unit))] left-[calc(838*var(--unit))] w-[calc(640*var(--unit))] [filter:drop-shadow(0_calc(5*var(--unit))_calc(4*var(--unit))_#0009)] [@media(max-width:1100px)]:top-auto [@media(max-width:1100px)]:bottom-[34px] [@media(max-width:1100px)]:left-auto [@media(max-width:1100px)]:right-[5%] [@media(max-width:1100px)]:w-[46%] [@media(max-width:650px)]:hidden">
         <svg
           className="brand-image"
           viewBox="0 0 680 110"

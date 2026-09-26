@@ -20,7 +20,7 @@ const solutions = [
 export function SolutionShortcuts() {
   return (
     <nav
-      className="relative grid grid-cols-3 w-[calc(605*var(--unit))] mt-[calc(42*var(--unit))] [border-block:1px_solid_#363a36] [@media(max-width:650px)]:grid-cols-1 [@media(max-width:650px)]:w-full [@media(max-width:650px)]:mt-[38px]"
+      className="relative grid grid-cols-3 w-[calc(605*var(--unit))] mt-[calc(42*var(--unit))] [border-block:1px_solid_#363a36] [@media(max-width:650px)]:grid-cols-1 [@media(max-width:650px)]:w-full [@media(max-width:650px)]:mt-[52px]"
       id="solucoes"
       aria-label="Soluções da Vexiom"
     >

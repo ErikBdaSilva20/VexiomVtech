@@ -27,7 +27,7 @@ export function WorkProcessSection() {
             contato até a orientação depois da entrega.
           </p>
         </div>
-        <div className="relative mt-[calc(56*var(--unit))] grid grid-cols-4 gap-x-[calc(32*var(--unit))] before:content-[''] before:absolute before:top-[calc(12*var(--unit))] before:left-0 before:right-0 before:h-px before:bg-[#292b29] [@media(max-width:1100px)]:gap-x-[24px] [@media(max-width:650px)]:grid-cols-1 [@media(max-width:650px)]:gap-y-[28px] [@media(max-width:650px)]:before:hidden">
+        <div className="relative mt-[calc(56*var(--unit))] grid grid-cols-4 gap-x-[calc(32*var(--unit))] before:content-[''] before:absolute before:top-[calc(12*var(--unit))] before:left-0 before:right-0 before:h-px before:bg-[#292b29] [@media(max-width:1100px)]:gap-x-[24px] [@media(max-width:650px)]:grid-cols-1 [@media(max-width:650px)]:gap-y-[28px] [@media(max-width:650px)]:before:hidden [@media(max-width:650px)]:after:content-[''] [@media(max-width:650px)]:after:absolute [@media(max-width:650px)]:after:left-[12px] [@media(max-width:650px)]:after:top-[6px] [@media(max-width:650px)]:after:bottom-[6px] [@media(max-width:650px)]:after:w-px [@media(max-width:650px)]:after:bg-[#2c2e2b] [@media(max-width:650px)]:after:z-0">
           {WORK_STEPS.map((step) => (
             <WorkStepCard key={step.index} step={step} />
           ))}
