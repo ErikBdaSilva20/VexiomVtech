@@ -86,13 +86,13 @@ export default async function PainelIndexPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#111210] px-5 py-8 text-[#f1f1ed] sm:px-8 sm:py-10 lg:px-12">
+    <main className="min-h-screen min-w-0 bg-[#111210] px-4 py-6 text-[#f1f1ed] sm:px-8 sm:py-10 lg:px-12">
       <div className="mx-auto max-w-7xl">
         <AdminNav role={admin.role} active="overview" />
-        <header className="mb-7">
+        <header className="mb-7 min-w-0">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#fbd020]">Gestão interna</p>
           <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">Visão geral</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#aaa]">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#aaa] sm:text-base">
             Panorama consolidado da prospecção{isSuperAdmin ? ", finanças e contratos" : ""}.
           </p>
         </header>
@@ -103,7 +103,7 @@ export default async function PainelIndexPage() {
             {balanceError || !balance ? (
               <ErrorState message="Não foi possível carregar o saldo financeiro agora." />
             ) : (
-              <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="mb-6 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
                 <StatCard label="Entradas no período" value={money.format(balance.income)} />
                 <StatCard label="Saídas no período" value={money.format(balance.expense)} />
                 <StatCard
@@ -120,8 +120,8 @@ export default async function PainelIndexPage() {
             {chartsError || !charts ? (
               <ErrorState message="Não foi possível carregar os gráficos financeiros agora." />
             ) : (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5">
+              <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4">
+                <div className="min-w-0 overflow-hidden rounded-xl border border-[#292b28] bg-[#181916] p-4 sm:p-5">
                   <h3 className="mb-3 text-sm font-semibold text-white">Entradas x saídas por mês</h3>
                   {charts.incomeExpenseByMonth.every((m) => m.income === 0 && m.expense === 0) ? (
                     <p className="py-10 text-center text-sm text-[#aaa]">Nenhum lançamento registrado.</p>
@@ -129,7 +129,7 @@ export default async function PainelIndexPage() {
                     <IncomeExpenseChart data={charts.incomeExpenseByMonth} />
                   )}
                 </div>
-                <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5">
+                <div className="min-w-0 overflow-hidden rounded-xl border border-[#292b28] bg-[#181916] p-4 sm:p-5">
                   <h3 className="mb-3 text-sm font-semibold text-white">Saídas por categoria</h3>
                   {charts.expenseByCategory.length === 0 ? (
                     <p className="py-10 text-center text-sm text-[#aaa]">Nenhuma saída registrada.</p>
@@ -148,7 +148,7 @@ export default async function PainelIndexPage() {
             <ErrorState message="Não foi possível carregar os indicadores de prospecção agora." />
           ) : (
             <>
-              <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="mb-6 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
                 <StatCard label="Leads no período" value={count.format(overview.totalLeads)} />
                 <StatCard
                   label="Taxa de conversão"
@@ -164,8 +164,8 @@ export default async function PainelIndexPage() {
                   value={count.format(overview.funnel.follow_up_pendente)}
                 />
               </div>
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5">
+              <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4">
+                <div className="min-w-0 overflow-hidden rounded-xl border border-[#292b28] bg-[#181916] p-4 sm:p-5">
                   <h3 className="mb-3 text-sm font-semibold text-white">Volume de leads por mês</h3>
                   {overview.volumeByMonth.every((m) => m.count === 0) ? (
                     <p className="py-10 text-center text-sm text-[#aaa]">Nenhum lead registrado.</p>
@@ -173,7 +173,7 @@ export default async function PainelIndexPage() {
                     <LeadsVolumeChart data={overview.volumeByMonth} />
                   )}
                 </div>
-                <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5">
+                <div className="min-w-0 overflow-hidden rounded-xl border border-[#292b28] bg-[#181916] p-4 sm:p-5">
                   <h3 className="mb-3 text-sm font-semibold text-white">Leads por status</h3>
                   {overview.totalLeads === 0 ? (
                     <p className="py-10 text-center text-sm text-[#aaa]">Nenhum lead registrado.</p>

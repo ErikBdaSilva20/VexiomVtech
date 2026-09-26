@@ -20,7 +20,7 @@ export function IncomeExpenseChart({
   data: { month: string; income: number; expense: number }[]
 }) {
   return (
-    <div role="img" aria-label="Gráfico de barras: entradas e saídas por mês">
+    <div className="min-w-0" role="img" aria-label="Gráfico de barras: entradas e saídas por mês">
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barGap={2}>
           <CartesianGrid stroke="#292b28" vertical={false} />

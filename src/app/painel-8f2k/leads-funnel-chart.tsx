@@ -11,7 +11,7 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
   em_analise: "Em análise",
   primeiro_contato_realizado: "1º contato",
   conversa_agendada: "Agendado",
-  proposta_em_preparacao: "Preparando proposta",
+  proposta_em_preparacao: "Prep. proposta",
   proposta_enviada: "Proposta enviada",
   follow_up_pendente: "Follow-up",
   contrato_fechado: "Fechado",
@@ -50,12 +50,27 @@ export function LeadsFunnelChart({
     fullLabel: STATUS_FULL_LABELS[status],
     count: funnel[status],
   }))
-  const rowHeight = 34
+  const rowHeight = 40
+  const maxCount = Math.max(...data.map((item) => item.count), 1)
 
   return (
-    <div role="img" aria-label="Gráfico de barras: leads por status">
+    <div className="min-w-0" role="img" aria-label="Gráfico de barras: leads por status">
+      <div className="space-y-2.5 sm:hidden" aria-hidden="true">
+        {data.map((item) => (
+          <div key={item.status} className="min-w-0">
+            <div className="mb-1 flex min-w-0 items-center justify-between gap-3 text-xs">
+              <span className="truncate text-[#c5cac2]">{item.fullLabel}</span>
+              <span className="shrink-0 tabular-nums text-[#e5e7e2]">{count.format(item.count)}</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-[#292b28]">
+              <div className="h-full rounded-full" style={{ backgroundColor: TERMINAL_COLOR[item.status] ?? "#fbd020", width: Math.max(4, (item.count / maxCount) * 100) + "%" }} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="hidden min-w-0 sm:block">
       <ResponsiveContainer width="100%" height={data.length * rowHeight}>
-        <BarChart data={data} layout="vertical" margin={{ top: 8, right: 40, left: 0, bottom: 0 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 8, right: 32, left: 0, bottom: 0 }}>
           <CartesianGrid stroke="#292b28" horizontal={false} />
           {/* Exact values are shown via LabelList at each bar's end, not by reading this axis — stays
               legible regardless of how large a status's count grows. */}
@@ -67,7 +82,7 @@ export function LeadsFunnelChart({
             tick={{ fill: "#a6a7a0", fontSize: 12 }}
             tickLine={false}
             axisLine={{ stroke: "#292b28" }}
-            width={120}
+            width={112}
             interval={0}
           />
           <Tooltip
@@ -84,11 +99,12 @@ export function LeadsFunnelChart({
               position="right"
               formatter={(value: unknown) => count.format(Number(value))}
               fill="#f1f1ed"
-              fontSize={12}
+              fontSize={11}
             />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
+      </div>
     </div>
   )
 }

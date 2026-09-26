@@ -22,15 +22,20 @@ export default async function EditAdminCasePage({
   if (admin.role !== "super_admin") redirect("/painel-8f2k/leads")
 
   const { id } = await params
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) notFound()
+  let lookupValue = id
+  try {
+    lookupValue = decodeURIComponent(id)
+  } catch {
+    notFound()
+  }
 
   const supabase = await createClient()
+  const caseQuery = supabase
+    .from("cases")
+    .select("id,title,slug,category,client_name,is_founder_project,project_id,cover_image_url,gallery_urls,external_link,description,tech_stack,problem_solved,motivation,published,display_order")
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lookupValue)
   const [caseResult, projects] = await Promise.all([
-    supabase
-      .from("cases")
-      .select("id,title,slug,category,client_name,is_founder_project,project_id,cover_image_url,gallery_urls,external_link,description,tech_stack,problem_solved,motivation,published,display_order")
-      .eq("id", id)
-      .maybeSingle(),
+    (isUuid ? caseQuery.eq("id", lookupValue) : caseQuery.eq("slug", lookupValue)).maybeSingle(),
     loadCaseProjectOptions(supabase),
   ])
 

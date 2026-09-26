@@ -98,7 +98,7 @@ export function LeadDrilldownPanel({
         aria-modal="true"
         aria-labelledby="lead-drilldown-title"
         onClick={(event) => event.stopPropagation()}
-        className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-[#30362e] bg-[#171a17]"
+        className="flex min-w-0 max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-[#30362e] bg-[#171a17]"
       >
         <header className="flex items-center justify-between gap-4 border-b border-[#2c312b] px-5 py-4 sm:px-6">
           <div className="min-w-0">
@@ -116,7 +116,7 @@ export function LeadDrilldownPanel({
           </button>
         </header>
 
-        <div className="overflow-y-auto p-5 sm:p-6">
+        <div className="min-w-0 overflow-y-auto p-5 sm:p-6">
           {state.status === "loading" && (
             <p role="status" className="rounded-lg border border-dashed border-[#3d443b] px-4 py-10 text-center text-sm text-[#a9b0a6]">
               Carregando leads…
@@ -147,7 +147,7 @@ export function LeadDrilldownPanel({
                 <ul className="list-none divide-y divide-[#30362e] overflow-hidden rounded-2xl border border-[#343a32] bg-[#171a17] p-0">
                   {state.result.leads.slice(0, DRILLDOWN_RENDER_CAP).map((lead) => (
                     <li key={lead.id} className="transition-colors hover:bg-[#1c201c]">
-                      <LeadListItem lead={lead} adminId={adminId} />
+                      <LeadListItem lead={lead} adminId={adminId} compact />
                     </li>
                   ))}
                 </ul>

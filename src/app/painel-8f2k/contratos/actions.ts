@@ -1,7 +1,8 @@
 "use server"
 
 import { createContract } from "@/lib/contracts/create-contract"
-import { createContractSchema } from "@/lib/contracts/contract-schema"
+import { createContractSchema, updateContractSchema } from "@/lib/contracts/contract-schema"
+import { updateContract } from "@/lib/contracts/update-contract"
 import { encryptContractFile } from "@/lib/contracts/encrypt-contract-file"
 import type { WriteContractErrorKind } from "@/lib/contracts/write-contract-error"
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin"
@@ -25,6 +26,11 @@ const PDF_MAGIC_BYTES = [0x25, 0x50, 0x44, 0x46] // "%PDF"
 export type CreateContractState =
   | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
   | { status: "success"; id: string }
+  | undefined
+
+export type UpdateContractState =
+  | { status: "error"; error: string; fieldErrors?: Record<string, string[]> }
+  | { status: "success" }
   | undefined
 
 async function matchesPdfSignature(file: File): Promise<boolean> {
@@ -90,4 +96,22 @@ export async function createContractAction(
   }
 
   return { status: "success", id: result.id }
+}
+
+export async function updateContractAction(_prevState: UpdateContractState, formData: FormData): Promise<UpdateContractState> {
+  const auth = await requireSuperAdmin(ROLE_DENIED_MESSAGE)
+  if (!auth.ok) return { status: "error", error: auth.error }
+  const serviceTypes = formData.getAll("service_types").filter((value): value is string => typeof value === "string")
+  const parsed = updateContractSchema.safeParse({ contract_id: textFormValue(formData, "contract_id"), lead_id: textFormValue(formData, "lead_id"), service_types: serviceTypes, amount: textFormValue(formData, "amount"), hours: textFormValue(formData, "hours"), remove_file: formData.get("remove_file") !== null })
+  if (!parsed.success) return { status: "error", error: "Verifique os campos destacados.", fieldErrors: parsed.error.flatten().fieldErrors }
+  const file = formData.get("file")
+  let encryptedFile: Buffer | undefined
+  if (file instanceof File && file.size > 0) {
+    const validationError = await validateContractFile(file)
+    if (validationError) return { status: "error", error: validationError }
+    encryptedFile = encryptContractFile(Buffer.from(await file.arrayBuffer()))
+  }
+  const result = await updateContract(await createClient(), parsed.data, encryptedFile)
+  if (!result.ok) return { status: "error", error: ERROR_MESSAGES[result.error] }
+  return { status: "success" }
 }

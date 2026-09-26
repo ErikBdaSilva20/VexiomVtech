@@ -74,21 +74,21 @@ export default async function LeadsPage({
       <div className="mx-auto max-w-7xl">
         <AdminNav role={admin.role} active="leads" />
 
-        <header className="mb-7 flex flex-col gap-5 border-b border-[#282d27] pb-7 sm:flex-row sm:items-end sm:justify-between">
-          <div>
+        <header className="mb-7 flex min-w-0 flex-col gap-4 border-b border-[#282d27] pb-6 sm:gap-5 sm:pb-7 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#fbd020]">Gestão comercial</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">Leads</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[#aeb5ab]">
               Organize oportunidades, prioridades e próximos contatos em espaços separados.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
             <p className="text-sm text-[#9fa69c]">
               Olá, <span className="font-medium text-[#e7ebe4]">{admin.name ?? "equipe"}</span>
             </p>
             <Link
               href="/painel-8f2k/leads/novo"
-              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#fbd020] px-5 text-sm font-semibold text-[#17140a] transition hover:bg-[#ffe15b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020]"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[#fbd020] px-5 text-sm font-semibold text-[#17140a] transition hover:bg-[#ffe15b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020] sm:w-auto"
             >
               <span aria-hidden="true" className="mr-2 text-lg leading-none">+</span>
               Novo lead

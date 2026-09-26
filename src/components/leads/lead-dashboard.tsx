@@ -111,7 +111,7 @@ function CountPanel({
   onRowClick?: (slice: LeadDrilldownSlice) => void
 }) {
   return (
-    <section className="min-w-0 rounded-2xl border border-[#30362e] bg-[#171a17] p-5 sm:p-6">
+    <section className="min-w-0 rounded-2xl border border-[#30362e] bg-[#171a17] p-4 sm:p-6">
       <h3 className="text-base font-semibold text-white">{title}</h3>
       <p className="mt-1 text-xs leading-5 text-[#9fa69c]">{description}</p>
       {rows.length === 0 ? (
@@ -119,7 +119,7 @@ function CountPanel({
           Sem dados neste período.
         </p>
       ) : (
-        <dl className="mt-5 grid grid-cols-1 gap-x-7 sm:grid-cols-2">
+        <dl className="mt-4 grid grid-cols-1 gap-x-7 sm:mt-5 sm:grid-cols-2">
           {rows.map((row) => (
             <div key={row.label} className="border-b border-[#2c312b]">
               {onRowClick ? (
@@ -190,7 +190,7 @@ export function LeadOverview({
 
   return (
     <section aria-labelledby="overview-title">
-      <div className="mb-6 flex flex-col gap-5 rounded-2xl border border-[#30362e] bg-[#171a17] p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
+      <div className="mb-6 flex min-w-0 flex-col gap-4 rounded-2xl border border-[#30362e] bg-[#171a17] p-4 sm:gap-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#fbd020]">Desempenho comercial</p>
           <h2 id="overview-title" className="mt-2 text-2xl font-semibold tracking-tight text-white">Visão geral</h2>
@@ -198,14 +198,14 @@ export function LeadOverview({
             Acompanhe o volume e a evolução das oportunidades no período escolhido.
           </p>
         </div>
-        <Form action="/painel-8f2k/leads" method="get" className="grid w-full grid-cols-2 items-end gap-3 lg:w-auto lg:grid-cols-[minmax(150px,1fr)_minmax(150px,1fr)_auto]">
+        <Form action="/painel-8f2k/leads" method="get" className="grid w-full grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:w-auto lg:grid-cols-[minmax(150px,1fr)_minmax(150px,1fr)_auto]">
           <FormField htmlFor="dashboard-from" label="Data inicial">
             <FormInput id="dashboard-from" name="from" type="date" defaultValue={overview?.from ?? selectedDates.from ?? ""} />
           </FormField>
           <FormField htmlFor="dashboard-to" label="Data final">
             <FormInput id="dashboard-to" name="to" type="date" defaultValue={overview?.to ?? selectedDates.to ?? ""} />
           </FormField>
-          <button type="submit" className="col-span-2 min-h-11 rounded-lg bg-[#fbd020] px-5 text-sm font-semibold text-[#17140a] transition hover:bg-[#ffe15b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020] lg:col-span-1">
+          <button type="submit" className="min-h-11 w-full rounded-lg bg-[#fbd020] px-5 text-sm font-semibold text-[#17140a] transition hover:bg-[#ffe15b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020] sm:col-span-2 lg:col-span-1 lg:w-auto">
             Atualizar
           </button>
         </Form>
@@ -217,7 +217,7 @@ export function LeadOverview({
         </p>
       )}
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
         {[
           {
             label: "Leads recebidos",
@@ -272,7 +272,7 @@ export function LeadOverview({
           </p>
         </section>
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-2">
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:gap-5 xl:grid-cols-2">
           <CountPanel
             title="Funil por etapa"
             description="Quantidade de oportunidades em cada momento comercial."
@@ -351,7 +351,7 @@ export function LeadAlerts({
           { label: "Urgentes", value: urgentCount, color: "text-red-200" },
           { label: "Agenda até hoje", value: agenda ? appointments.length : null, color: "text-[#fbd020]" },
         ].map((item) => (
-          <article key={item.label} className="rounded-2xl border border-[#30362e] bg-[#171a17] p-5">
+          <article key={item.label} className="min-w-0 rounded-2xl border border-[#30362e] bg-[#171a17] p-4 sm:p-5">
             <p className="text-xs font-medium text-[#afb6ac]">{item.label}</p>
             <p className={"mt-2 text-3xl font-semibold tabular-nums " + item.color}>{item.value ?? "-"}</p>
           </article>
@@ -360,7 +360,7 @@ export function LeadAlerts({
 
       {appointments.length > 0 && (
         <section aria-labelledby="agenda-title" className="mt-6 overflow-hidden rounded-2xl border border-[#6b5a24] bg-[#1c1a12]">
-          <div className="border-b border-[#51461f] px-5 py-4 sm:px-6">
+          <div className="border-b border-[#51461f] px-4 py-4 sm:px-6">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#fbd020]">Hoje e em atraso</p>
             <h3 id="agenda-title" className="mt-1 text-lg font-semibold text-white">Compromissos que pedem ação</h3>
           </div>
@@ -410,7 +410,7 @@ export function LeadAlerts({
                 disabled={!clickable}
                 onClick={() => clickable && onOpenRisk(group.label, group.items)}
                 className={
-                  "flex min-h-[152px] min-w-0 flex-col justify-between rounded-2xl border border-[#343a32] border-l-4 bg-[#171a17] p-5 text-left transition sm:p-6 " +
+                  "flex min-h-[132px] min-w-0 flex-col justify-between rounded-2xl border border-[#343a32] border-l-4 bg-[#171a17] p-4 text-left transition sm:min-h-[152px] sm:p-6 " +
                   group.accent +
                   (clickable
                     ? " cursor-pointer hover:border-[#646d60] hover:bg-[#1d211c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020]"

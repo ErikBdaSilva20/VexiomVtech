@@ -25,10 +25,10 @@ function statusStyle(status: string) {
  * leads-overview drill-down panel (`lead-drilldown-panel.tsx`) can reuse the
  * exact same item rendering instead of duplicating it.
  */
-export function LeadListItem({ lead, adminId }: { lead: LeadRow; adminId: string }) {
+export function LeadListItem({ lead, adminId, compact = false }: { lead: LeadRow; adminId: string; compact?: boolean }) {
   return (
-    <article className="grid min-w-0 gap-5 p-5 lg:grid-cols-[minmax(190px,1.15fr)_minmax(170px,0.8fr)_minmax(210px,1fr)_auto] lg:items-center sm:p-6">
-      <div className="min-w-0">
+    <article className={"grid min-w-0 " + (compact ? "grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-3 sm:p-5" : "gap-4 p-4 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-4 sm:p-5 lg:grid-cols-[minmax(190px,1.15fr)_minmax(170px,0.8fr)_minmax(210px,1fr)_auto] lg:items-center")}>
+      <div className={"min-w-0" + (compact ? " sm:col-span-1" : " sm:col-span-1 lg:col-span-1")}>
         <h3 className="truncate text-base font-semibold text-white">
           <Link
             prefetch={false}
@@ -45,47 +45,52 @@ export function LeadListItem({ lead, adminId }: { lead: LeadRow; adminId: string
         </div>
       </div>
 
-      <div className="min-w-0">
-        <span className={"inline-flex max-w-full rounded-full border px-3 py-1 text-xs font-medium " + statusStyle(lead.status)}>
+      <div className={"min-w-0" + (compact ? " sm:col-span-1" : " sm:col-span-1 lg:col-span-1")}>
+        <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#858d82]">Etapa atual</p>
+        <span className={"inline-flex max-w-full rounded-full border px-3 py-1.5 text-xs font-semibold " + statusStyle(lead.status)}>
           <span className="truncate">{LEAD_STATUS_LABELS[lead.status] ?? lead.status}</span>
         </span>
-        <p className="mt-2 truncate text-xs text-[#a9b0a6]">{lead.project_type}</p>
+        <p className="mt-2 truncate text-xs text-[#a9b0a6]"><span className="text-[#7f887d]">Projeto:</span> {lead.project_type}</p>
         {(lead.tags?.length ?? 0) > 0 && (
-          <p className="mt-1 truncate text-xs text-[#7f887d]">{lead.tags?.join(" · ")}</p>
+          <p className="mt-1 truncate text-xs text-[#7f887d]"><span className="text-[#687066]">Tags:</span> {lead.tags?.join(" · ")}</p>
         )}
       </div>
 
-      <div className="min-w-0 rounded-lg border border-[#30362e] bg-[#111311] px-4 py-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#858d82]">Próxima ação</p>
+      <div className={"min-w-0 rounded-lg border px-4 py-3 " + (lead.next_action ? "border-[#30362e] bg-[#111311]" : "border-amber-800/60 bg-[#1d1910]") + (compact ? " sm:col-span-2" : " sm:col-span-2 lg:col-span-1")}>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#858d82]">Próxima ação</p>
+          {!lead.next_action && <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-300">Pendente</span>}
+        </div>
         {lead.next_action ? (
           <>
-            <p className="mt-1 truncate text-sm text-[#e3e7e0]">{lead.next_action}</p>
-            {lead.next_action_at && <time dateTime={lead.next_action_at} className="mt-1 block text-xs text-[#aab1a7]">{formatDate(lead.next_action_at)}</time>}
+            <p className="mt-1 truncate text-sm font-medium text-[#e3e7e0]">{lead.next_action}</p>
+            {lead.next_action_at && <time dateTime={lead.next_action_at} className="mt-1 block text-xs text-[#aab1a7]">Agendado para {formatDate(lead.next_action_at)}</time>}
           </>
         ) : (
-          <p className="mt-1 text-sm text-[#9da49a]">Não definida</p>
+          <p className="mt-1 text-sm font-medium text-amber-100">Nenhuma ação definida</p>
         )}
       </div>
 
-      <div className="flex items-center justify-between gap-4 lg:block lg:text-right">
-        <div>
-          <p className="text-xs text-[#aab1a7]">
-            {lead.assigned_to === adminId ? "Responsável: você" : lead.assigned_to ? "Responsável atribuído" : "Sem responsável"}
+      <div className={compact ? "flex min-w-0 items-center justify-between gap-4 sm:col-span-2" : "flex min-w-0 items-center justify-between gap-4 sm:col-span-2 lg:col-span-1 lg:block lg:text-right"}>
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#858d82]">Responsável</p>
+          <p className="mt-1 truncate text-xs text-[#d2d7cf]">
+            {lead.assigned_to === adminId ? "Você" : lead.assigned_to ? "Atribuído" : "Sem responsável"}
           </p>
-          <p className="mt-1 text-xs text-[#7f887d]">{formatDate(lead.created_at)}</p>
+          <p className="mt-1 text-[11px] text-[#7f887d]">Entrada em {formatDate(lead.created_at)}</p>
         </div>
         <Link
           prefetch={false}
           href={"/painel-8f2k/leads/" + lead.id}
           aria-label={"Abrir lead " + lead.name}
-          className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border border-[#4a5147] text-[#fbd020] hover:border-[#fbd020] hover:bg-[#282515] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020] lg:mt-3"
+          className={"inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border border-[#4a5147] text-[#fbd020] hover:border-[#fbd020] hover:bg-[#282515] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020]" + (compact ? "" : " lg:mt-3")}
         >
           <span aria-hidden="true">→</span>
         </Link>
       </div>
 
       {lead.possible_duplicate_of && (
-        <p className="rounded-lg border border-amber-800/50 bg-amber-950/20 px-3 py-2 text-xs text-amber-100 lg:col-span-4">
+        <p className={"rounded-lg border border-amber-800/50 bg-amber-950/20 px-3 py-2 text-xs text-amber-100 " + (compact ? "sm:col-span-2" : "sm:col-span-2 lg:col-span-4")}>
           Possível duplicidade, confira o contato antes de iniciar outra conversa.
         </p>
       )}

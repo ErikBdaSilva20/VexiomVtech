@@ -102,7 +102,7 @@ export default async function AdminCasesPage({
                       <h2 className="mt-3 break-words text-lg font-semibold text-white">{item.title}</h2>
                       <p className="mt-1 text-sm text-[#aaa]">{item.category}</p>
                       {item.is_founder_project && <p className="mt-2 text-xs text-[#d6ca97]">Projeto anterior à Vexiom</p>}
-                      <Link prefetch={false} href={"/painel-8f2k/cases/" + item.id + "/editar"} className="mt-5 inline-flex min-h-10 items-center self-start text-sm font-semibold text-[#fbd020] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#fbd020]">Abrir editor <span aria-hidden="true" className="ml-2">→</span></Link>
+                      <Link prefetch={false} href={"/painel-8f2k/cases/" + (item.slug || item.id) + "/editar"} className="mt-5 inline-flex min-h-10 items-center self-start text-sm font-semibold text-[#fbd020] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#fbd020]">Abrir editor <span aria-hidden="true" className="ml-2">→</span></Link>
                     </div>
                   </article>
                 </li>

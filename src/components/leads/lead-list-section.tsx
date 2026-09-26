@@ -36,7 +36,7 @@ export function LeadListSection({
 
   return (
     <section aria-labelledby="lead-list-title">
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <header className="mb-5 flex flex-col items-start justify-between gap-3 sm:mb-6 sm:flex-row sm:items-end">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#fbd020]">Base comercial</p>
           <h2 id="lead-list-title" className="mt-2 text-2xl font-semibold tracking-tight text-white">Lista de leads</h2>
@@ -49,7 +49,7 @@ export function LeadListSection({
         )}
       </header>
 
-      <section aria-label="Busca e filtros" className="mb-6 rounded-2xl border border-[#343a32] bg-[#171a17] p-5 sm:p-6">
+      <section aria-label="Busca e filtros" className="mb-6 rounded-2xl border border-[#343a32] bg-[#171a17] p-4 sm:p-6">
         <Form action="/painel-8f2k/leads" method="get" className="gap-5">
           {filters.page_size !== 20 && <input type="hidden" name="page_size" value={filters.page_size} />}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(220px,0.7fr)_auto]">
@@ -69,7 +69,7 @@ export function LeadListSection({
                 {LEAD_STATUS_OPTIONS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
               </FormSelect>
             </FormField>
-            <button type="submit" className="min-h-11 self-end rounded-lg bg-[#fbd020] px-6 text-sm font-semibold text-[#17140a] transition hover:bg-[#ffe15b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020]">
+            <button type="submit" className="min-h-11 w-full self-end rounded-lg bg-[#fbd020] px-6 text-sm font-semibold text-[#17140a] transition hover:bg-[#ffe15b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020] lg:w-auto">
               Buscar
             </button>
           </div>
@@ -97,11 +97,11 @@ export function LeadListSection({
             </div>
           </details>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <button type="submit" className="inline-flex min-h-10 items-center rounded-lg border border-[#596156] px-4 text-sm font-semibold text-white hover:border-[#fbd020] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020]">
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+            <button type="submit" className="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-[#596156] px-4 text-sm font-semibold text-white hover:border-[#fbd020] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fbd020] sm:w-auto">
               Aplicar todos os filtros
             </button>
-            <Link href="/painel-8f2k/leads?section=list" className="inline-flex min-h-10 items-center px-2 text-sm text-[#aeb5ab] underline-offset-4 hover:text-white hover:underline">
+            <Link href="/painel-8f2k/leads?section=list" className="inline-flex min-h-10 items-center justify-center px-2 text-sm text-[#aeb5ab] underline-offset-4 hover:text-white hover:underline sm:w-auto">
               Limpar filtros
             </Link>
           </div>

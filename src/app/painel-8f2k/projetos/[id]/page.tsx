@@ -35,7 +35,7 @@ export default async function ProjectDetailPage({
       .maybeSingle(),
     supabase
       .from("cases")
-      .select("id,title,published")
+      .select("id,title,slug,published")
       .eq("project_id", id)
       .order("display_order", { ascending: true }),
     supabase
@@ -94,7 +94,7 @@ export default async function ProjectDetailPage({
               {linkedCases.map((item) => (
                 <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <span className="text-sm text-[#ddd]">{item.title} <span className="text-xs text-[#92938d]">· {item.published ? "Publicado" : "Rascunho"}</span></span>
-                  <Link prefetch={false} href={"/painel-8f2k/cases/" + item.id + "/editar"} className="text-xs font-semibold text-[#fbd020] hover:underline">Abrir case →</Link>
+                  <Link prefetch={false} href={"/painel-8f2k/cases/" + (item.slug || item.id) + "/editar"} className="text-xs font-semibold text-[#fbd020] hover:underline">Abrir case →</Link>
                 </li>
               ))}
             </ul>

@@ -7,32 +7,11 @@ import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
 import { listContracts, type ContractListItem } from "@/lib/contracts/list-contracts"
 import { listContractsQuerySchema } from "@/lib/contracts/list-contracts-schema"
 import { createClient } from "@/lib/supabase/server"
+import { ContractRow } from "./contract-row"
 
 export const metadata: Metadata = {
   title: "Contratos - Vexiom",
   robots: { index: false, follow: false },
-}
-
-const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
-const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit", month: "2-digit", year: "numeric",
-})
-
-const SERVICE_TYPE_LABELS: Record<string, string> = {
-  site: "Site",
-  sistema_sob_medida: "Sistema sob medida",
-  aplicativo: "Aplicativo",
-  manutencao: "Manutenção",
-  consultoria: "Consultoria",
-  demanda: "Demanda",
-}
-
-function formatDate(value: string) {
-  return dateFormatter.format(new Date(value))
-}
-
-function serviceTypesLabel(types: string[]) {
-  return types.map((type) => SERVICE_TYPE_LABELS[type] ?? type).join(", ")
 }
 
 function pageHref(page: number) {
@@ -106,26 +85,11 @@ export default async function AdminContractsPage({
                     <th className="px-4 py-3 font-medium">Criado por</th>
                     <th className="px-4 py-3 font-medium">Data</th>
                     <th className="px-4 py-3 font-medium">Anexo</th>
+                    <th className="px-4 py-3 font-medium"><span className="sr-only">Ações</span></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {contracts.map((contract) => (
-                    <tr key={contract.id} className="border-b border-[#292b28] last:border-b-0">
-                      <td className="px-4 py-3 text-[#e5e5df]">{contract.lead_name ?? "Lead removido"}</td>
-                      <td className="px-4 py-3 text-[#c7c7c0]">{serviceTypesLabel(contract.service_types)}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-[#e5e5df]">{money.format(contract.amount)}</td>
-                      <td className="px-4 py-3 text-[#c7c7c0]">{contract.hours != null ? contract.hours + "h" : "-"}</td>
-                      <td className="px-4 py-3 text-[#c7c7c0]">{contract.created_by_name ?? "-"}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-[#9fa69c]">{formatDate(contract.created_at)}</td>
-                      <td className="px-4 py-3">
-                        {contract.has_file ? (
-                          <a href={"/painel-8f2k/contratos/" + contract.id + "/download"} className="inline-flex min-h-9 items-center rounded-md border border-[#6c6230] px-3 text-xs font-semibold text-[#fbd020] hover:border-[#fbd020]">Baixar</a>
-                        ) : (
-                          <span className="text-xs text-[#6b6c66]">Sem anexo</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {contracts.map((contract) => <ContractRow key={contract.id} contract={contract} />)}
                 </tbody>
               </table>
             </div>

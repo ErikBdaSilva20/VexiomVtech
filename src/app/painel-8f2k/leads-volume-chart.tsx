@@ -12,7 +12,7 @@ export function LeadsVolumeChart({
   data: { month: string; count: number }[]
 }) {
   return (
-    <div role="img" aria-label="Gráfico de linha: volume de leads por mês">
+    <div className="min-w-0" role="img" aria-label="Gráfico de linha: volume de leads por mês">
       <ResponsiveContainer width="100%" height={260}>
         <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid stroke="#292b28" vertical={false} />

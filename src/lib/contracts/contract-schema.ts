@@ -77,3 +77,13 @@ export const createContractSchema = baseContractSchema.superRefine((data, ctx) =
 })
 
 export type CreateContractInput = z.infer<typeof createContractSchema>
+export const updateContractSchema = baseContractSchema.extend({
+  contract_id: z.uuid("Contrato inválido."),
+  remove_file: z.boolean().default(false),
+}).superRefine((data, ctx) => {
+  if (data.service_types.includes(DEMANDA_SERVICE_TYPE) && data.hours == null) {
+    ctx.addIssue({ code: "custom", path: ["hours"], message: "Horas são obrigatórias para contratos de demanda." })
+  }
+})
+
+export type UpdateContractInput = z.infer<typeof updateContractSchema>
