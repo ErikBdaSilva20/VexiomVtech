@@ -6,7 +6,7 @@ import { WorkStepDetailCard } from "@/components/work-process/work-step-detail-c
 import { FaqSection } from "@/components/shared/faq-section"
 
 export const metadata: Metadata = {
-  title: "Como trabalhamos — Vexiom",
+  title: "Como trabalhamos - Vexiom",
   description:
     "Conheça o processo da Vexiom: conversa inicial, definição da solução, desenvolvimento e entrega com orientação.",
 }
@@ -17,7 +17,7 @@ export default function ComoTrabalhamosPage() {
       <PageHero
         eyebrow="Processo"
         title="Como trabalhamos."
-        description="Conversa inicial, definição da solução, desenvolvimento e entrega com orientação. Um processo claro, sem etapas escondidas, do primeiro contato até depois do lançamento — com suporte contínuo opcional."
+        description="Conversa inicial, definição da solução, desenvolvimento e entrega com orientação. Um processo claro, sem etapas escondidas, do primeiro contato até depois do lançamento - com suporte contínuo opcional."
       />
       <section
         className="py-[calc(50*var(--unit))] px-[calc(94*var(--unit))] [@media(max-width:1100px)]:px-[5%] [@media(max-width:650px)]:px-[21px]"

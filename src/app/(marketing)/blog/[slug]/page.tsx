@@ -21,7 +21,7 @@ export async function generateMetadata({
   if (!post) return {}
 
   return {
-    title: `${post.title} — Vexiom`,
+    title: `${post.title} - Vexiom`,
     description: post.excerpt,
   }
 }

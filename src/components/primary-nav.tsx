@@ -12,7 +12,7 @@ interface PrimaryNavProps {
   className?: string
   /** "desktop" styles each link for the always-visible top nav (active
    * underline via ::after, hover color); "mobile" styles each link for the
-   * <details> dropdown list (block row, padding, smaller font) — both only
+   * <details> dropdown list (block row, padding, smaller font) - both only
    * take effect at/under the 1100px breakpoint where that instance is
    * actually shown. Defaults to "mobile" since that's the shared/no-frills
    * shape. */
@@ -33,7 +33,7 @@ const mobileLinkClassName =
   "[@media(max-width:1100px)]:block [@media(max-width:1100px)]:p-[12px] [@media(max-width:1100px)]:text-[13px] [@media(max-width:1100px)]:hover:text-vexiom-yellow [@media(max-width:1100px)]:aria-[current=page]:text-vexiom-yellow"
 
 /**
- * Renders the nav item list — real links for every item, each marked
+ * Renders the nav item list - real links for every item, each marked
  * aria-current="page" when it matches the current route. Shared between
  * the desktop nav and the mobile menu's nav so the item markup only
  * exists once; `variant` picks which of the two link looks applies.

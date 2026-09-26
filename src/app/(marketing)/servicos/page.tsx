@@ -5,7 +5,7 @@ import { PageHero } from "@/components/shared/page-hero"
 import { ServiceDetailCard } from "@/components/services/service-detail-card"
 
 export const metadata: Metadata = {
-  title: "Serviços — Vexiom",
+  title: "Serviços - Vexiom",
   description:
     "Sites e landing pages, sistemas sob medida, lojas online e automações com IA: escopo, prazo e investimento de cada solução da Vexiom.",
 }

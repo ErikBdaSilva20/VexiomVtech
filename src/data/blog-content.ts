@@ -20,7 +20,7 @@ export const BLOG_POSTS: BlogPost[] = [
     excerpt:
       "Planilhas e retrabalho custam mais do que parecem. Entenda o impacto real de operar sem automação.",
     content:
-      "Toda operação que depende de planilhas e processos manuais paga um preço invisível: tempo. Esse tempo, somado ao longo dos meses, é o que separa negócios que escalam dos que travam. Automatizar não é sobre tecnologia pela tecnologia — é sobre devolver horas para o que gera resultado.",
+      "Toda operação que depende de planilhas e processos manuais paga um preço invisível: tempo. Esse tempo, somado ao longo dos meses, é o que separa negócios que escalam dos que travam. Automatizar não é sobre tecnologia pela tecnologia, é sobre devolver horas para o que gera resultado.",
     publishedAt: "2026-01-15",
   },
 ]

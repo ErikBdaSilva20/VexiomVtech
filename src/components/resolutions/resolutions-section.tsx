@@ -26,7 +26,7 @@ export function ResolutionsSection() {
           </h2>
           <p className="max-w-[calc(385*var(--unit))] mt-[calc(32*var(--unit))] text-[#afb1ae] text-[calc(15*var(--unit))] leading-[1.6] [@media(max-width:650px)]:mt-[24px] [@media(max-width:650px)]:text-[14px]">
             Cada projeto começa pelo ponto que está impedindo seu negócio de
-            avançar — não por uma solução pronta ou tecnologia da moda.
+            avançar, não por uma solução pronta ou tecnologia da moda.
           </p>
 
         </div>

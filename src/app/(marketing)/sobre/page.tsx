@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { PageHero } from "@/components/shared/page-hero"
 
 export const metadata: Metadata = {
-  title: "Sobre — Vexiom",
+  title: "Sobre - Vexiom",
   description:
     "Conheça a Vexiom: tecnologia projetada para acelerar negócios através de sites, sistemas, lojas online e automações com IA.",
 }

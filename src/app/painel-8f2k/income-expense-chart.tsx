@@ -6,7 +6,7 @@ import { formatMonth } from "./format-month"
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })
 // Compact notation ("R$ 12 mil") keeps axis ticks short regardless of how large the
-// values get — the exact figure is still available in the tooltip.
+// values get - the exact figure is still available in the tooltip.
 const moneyCompact = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",

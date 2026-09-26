@@ -186,7 +186,7 @@ export function CaseEditor({
             {initial?.cover_image_url && (
               <div>
                 <p className="mb-3 text-xs text-[#999]">Capa atual</p>
-                <div className="max-w-sm"><CaseImage src={initial.cover_image_url} title={title + " — capa"} /></div>
+                <div className="max-w-sm"><CaseImage src={initial.cover_image_url} title={title + " - capa"} /></div>
               </div>
             )}
             {(initial?.gallery_urls?.length ?? 0) > 0 && (
@@ -194,7 +194,7 @@ export function CaseEditor({
                 <p className="mb-3 text-xs text-[#999]">Imagens já cadastradas</p>
                 <ul className="grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3">
                   {initial?.gallery_urls?.map((url, index) => (
-                    <li key={url + index}><CaseImage src={url} title={title + " — imagem " + (index + 1)} /></li>
+                    <li key={url + index}><CaseImage src={url} title={title + " - imagem " + (index + 1)} /></li>
                   ))}
                 </ul>
               </div>

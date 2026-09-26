@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server"
 import { loadCaseProjectOptions } from "../project-options"
 
 export const metadata: Metadata = {
-  title: "Novo case — Vexiom",
+  title: "Novo case - Vexiom",
   robots: { index: false, follow: false },
 }
 

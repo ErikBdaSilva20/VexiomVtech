@@ -17,7 +17,7 @@ export function ExpenseCategoryChart({
       <ResponsiveContainer width="100%" height={top.length * rowHeight}>
         <BarChart data={top} layout="vertical" margin={{ top: 8, right: 72, left: 0, bottom: 0 }}>
           <CartesianGrid stroke="#292b28" horizontal={false} />
-          {/* Exact values are shown via LabelList at each bar's end, not by reading this axis —
+          {/* Exact values are shown via LabelList at each bar's end, not by reading this axis -
               stays legible regardless of how large a category's total grows. */}
           <XAxis type="number" hide />
           <YAxis

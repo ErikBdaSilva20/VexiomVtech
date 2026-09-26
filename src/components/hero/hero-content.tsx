@@ -1,7 +1,7 @@
 import { HeroActions } from "@/components/hero/hero-actions"
 import { SolutionShortcuts } from "@/components/hero/solution-shortcuts"
 
-/** Eyebrow, headline, description, CTAs and stats — the .hero-copy column. */
+/** Eyebrow, headline, description, CTAs and stats - the .hero-copy column. */
 export function HeroContent() {
   return (
     <div className="absolute z-[2] top-[calc(70*var(--unit))] left-[calc(82*var(--unit))] w-[calc(660*var(--unit))] [@media(max-width:1100px)]:top-[59px] [@media(max-width:1100px)]:left-[5%] [@media(max-width:1100px)]:w-[90%] [@media(max-width:650px)]:relative [@media(max-width:650px)]:top-auto [@media(max-width:650px)]:left-auto [@media(max-width:650px)]:w-full">

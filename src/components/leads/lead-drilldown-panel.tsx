@@ -11,7 +11,7 @@ export const DRILLDOWN_RENDER_CAP = 100
 /** Pure — the truncation note shown when a slice exceeds the render cap, or null otherwise. Exported for testing. */
 export function truncationNote(total: number): string | null {
   if (total <= DRILLDOWN_RENDER_CAP) return null
-  return "Mostrando os primeiros " + DRILLDOWN_RENDER_CAP + " de " + total + " — refine pela lista de leads."
+  return "Mostrando os primeiros " + DRILLDOWN_RENDER_CAP + " de " + total + ", refine pela lista de leads."
 }
 
 /** Pure — the panel's title for a given slice. Exported for testing. */

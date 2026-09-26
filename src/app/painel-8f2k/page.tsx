@@ -16,7 +16,7 @@ import { LeadsFunnelChart } from "./leads-funnel-chart"
 import { LeadsVolumeChart } from "./leads-volume-chart"
 
 export const metadata: Metadata = {
-  title: "Visão geral — Vexiom",
+  title: "Visão geral - Vexiom",
   robots: { index: false, follow: false },
 }
 

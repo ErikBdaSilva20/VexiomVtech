@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server"
 import { ContractForm } from "./contract-form"
 
 export const metadata: Metadata = {
-  title: "Novo contrato — Vexiom",
+  title: "Novo contrato - Vexiom",
   robots: { index: false, follow: false },
 }
 

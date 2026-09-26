@@ -15,7 +15,7 @@ import { prospectingOverviewQuerySchema } from "@/lib/leads/prospecting-overview
 import { createClient } from "@/lib/supabase/server"
 
 export const metadata: Metadata = {
-  title: "Leads — Vexiom",
+  title: "Leads - Vexiom",
   robots: { index: false, follow: false },
 }
 

@@ -9,7 +9,7 @@ import { listContractsQuerySchema } from "@/lib/contracts/list-contracts-schema"
 import { createClient } from "@/lib/supabase/server"
 
 export const metadata: Metadata = {
-  title: "Contratos — Vexiom",
+  title: "Contratos - Vexiom",
   robots: { index: false, follow: false },
 }
 
@@ -114,8 +114,8 @@ export default async function AdminContractsPage({
                       <td className="px-4 py-3 text-[#e5e5df]">{contract.lead_name ?? "Lead removido"}</td>
                       <td className="px-4 py-3 text-[#c7c7c0]">{serviceTypesLabel(contract.service_types)}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-[#e5e5df]">{money.format(contract.amount)}</td>
-                      <td className="px-4 py-3 text-[#c7c7c0]">{contract.hours != null ? contract.hours + "h" : "—"}</td>
-                      <td className="px-4 py-3 text-[#c7c7c0]">{contract.created_by_name ?? "—"}</td>
+                      <td className="px-4 py-3 text-[#c7c7c0]">{contract.hours != null ? contract.hours + "h" : "-"}</td>
+                      <td className="px-4 py-3 text-[#c7c7c0]">{contract.created_by_name ?? "-"}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-[#9fa69c]">{formatDate(contract.created_at)}</td>
                       <td className="px-4 py-3">
                         {contract.has_file ? (

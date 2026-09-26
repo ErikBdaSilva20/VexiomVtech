@@ -8,7 +8,7 @@ import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
 import { createClient } from "@/lib/supabase/server"
 
 export const metadata: Metadata = {
-  title: "Novo lançamento — Vexiom",
+  title: "Novo lançamento - Vexiom",
   robots: { index: false, follow: false },
 }
 

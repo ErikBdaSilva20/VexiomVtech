@@ -8,7 +8,7 @@ import { getCurrentAdmin } from "@/lib/auth/get-current-admin"
 import { ManualLeadForm } from "./manual-lead-form"
 
 export const metadata: Metadata = {
-  title: "Novo lead — Vexiom",
+  title: "Novo lead - Vexiom",
   robots: { index: false, follow: false },
 }
 

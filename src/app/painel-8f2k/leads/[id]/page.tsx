@@ -13,7 +13,7 @@ import { createClient } from "@/lib/supabase/server"
 import { InteractionForm, LeadDetailControls, MeetingActions, MeetingForm } from "./lead-detail-controls"
 
 export const metadata: Metadata = {
-  title: "Detalhe do lead — Vexiom",
+  title: "Detalhe do lead - Vexiom",
   robots: { index: false, follow: false },
 }
 

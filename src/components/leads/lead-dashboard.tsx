@@ -19,10 +19,10 @@ type NamedCount = { label: string; count: number; slice: LeadDrilldownSlice }
 export type RiskGroup = { label: string; detail: string; items: LeadRow[]; accent: string; count: string }
 
 /**
- * Pure — maps `getLeadRiskAlerts`'s four risk categories to the copy/style
+ * Pure - maps `getLeadRiskAlerts`'s four risk categories to the copy/style
  * each clickable count card needs. Exported for testing so the card
  * labels/counts can be asserted without rendering the component (this
- * project's vitest config has no DOM environment — see
+ * project's vitest config has no DOM environment - see
  * `lead-drilldown-panel.test.ts`).
  */
 export function buildRiskGroups(risk: LeadRiskAlerts | null): RiskGroup[] {
@@ -62,14 +62,14 @@ export function buildRiskGroups(risk: LeadRiskAlerts | null): RiskGroup[] {
 const APPOINTMENT_URGENT_WINDOW_MS = 60 * 60 * 1000
 
 /**
- * Pure — an appointment is "urgent" once it's overdue or within 1h of `now`,
+ * Pure - an appointment is "urgent" once it's overdue or within 1h of `now`,
  * "upcoming" otherwise. Exported for testing.
  */
 export function appointmentUrgency(at: string, now: Date): "urgent" | "upcoming" {
   return new Date(at).getTime() - now.getTime() <= APPOINTMENT_URGENT_WINDOW_MS ? "urgent" : "upcoming"
 }
 
-/** Pure — first/last calendar day (America/Sao_Paulo) of a "YYYY-MM" month. Exported for testing. */
+/** Pure - first/last calendar day (America/Sao_Paulo) of a "YYYY-MM" month. Exported for testing. */
 export function monthDateRange(month: string): { from: string; to: string } {
   const start = new Date(month + "-01T00:00:00Z")
   const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0))
@@ -162,19 +162,19 @@ export function LeadOverview({
 }) {
   const funnel = overview
     ? LEAD_STATUSES.map((status) => ({
-        label: LEAD_STATUS_LABELS[status],
-        count: overview.funnel[status],
-        slice: { kind: "status" as const, value: status, label: LEAD_STATUS_LABELS[status] },
-      }))
+      label: LEAD_STATUS_LABELS[status],
+      count: overview.funnel[status],
+      slice: { kind: "status" as const, value: status, label: LEAD_STATUS_LABELS[status] },
+    }))
     : []
   const projectTypes = overview
     ? Object.entries(overview.projectTypeDistribution)
-        .map(([label, count]) => ({
-          label,
-          count,
-          slice: { kind: "project_type" as const, value: label, label },
-        }))
-        .sort((left, right) => right.count - left.count)
+      .map(([label, count]) => ({
+        label,
+        count,
+        slice: { kind: "project_type" as const, value: label, label },
+      }))
+      .sort((left, right) => right.count - left.count)
     : []
   const monthlyVolume = overview?.volumeByMonth.map(({ month, count }) => {
     const label = formatMonth(month)
@@ -183,9 +183,9 @@ export function LeadOverview({
   }) ?? []
   const activeLeads = overview
     ? overview.totalLeads
-      - overview.funnel.contrato_fechado
-      - overview.funnel.nao_convertido
-      - overview.funnel.em_suporte_continuo
+    - overview.funnel.contrato_fechado
+    - overview.funnel.nao_convertido
+    - overview.funnel.em_suporte_continuo
     : null
 
   return (
@@ -221,19 +221,19 @@ export function LeadOverview({
         {[
           {
             label: "Leads recebidos",
-            value: overview ? String(overview.totalLeads) : "—",
+            value: overview ? String(overview.totalLeads) : "-",
             detail: "no período",
             color: "text-white",
           },
           {
             label: "Em andamento",
-            value: activeLeads === null ? "—" : String(Math.max(0, activeLeads)),
+            value: activeLeads === null ? "-" : String(Math.max(0, activeLeads)),
             detail: "oportunidades ativas",
             color: "text-[#fbd020]",
           },
           {
             label: "Contratos fechados",
-            value: overview ? String(overview.funnel.contrato_fechado) : "—",
+            value: overview ? String(overview.funnel.contrato_fechado) : "-",
             detail: "convertidos",
             color: "text-emerald-300",
           },
@@ -241,7 +241,7 @@ export function LeadOverview({
             label: "Taxa de conversão",
             value: overview
               ? new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 }).format(overview.conversionRate)
-              : "—",
+              : "-",
             detail: "sobre o total",
             color: "text-[#9ed7ff]",
           },
@@ -313,21 +313,21 @@ export function LeadAlerts({
   const nowDate = new Date(now)
   const appointments = agenda
     ? [
-        ...agenda.followUps.map((item) => ({
-          id: "follow-" + item.leadId,
-          leadId: item.leadId,
-          lead: item.leadName,
-          kind: "Follow-up",
-          at: item.nextActionAt,
-        })),
-        ...agenda.meetings.map((item) => ({
-          id: "meeting-" + item.meetingId,
-          leadId: item.leadId,
-          lead: item.leadName,
-          kind: "Reunião",
-          at: item.scheduledAt,
-        })),
-      ].sort((left, right) => left.at.localeCompare(right.at))
+      ...agenda.followUps.map((item) => ({
+        id: "follow-" + item.leadId,
+        leadId: item.leadId,
+        lead: item.leadName,
+        kind: "Follow-up",
+        at: item.nextActionAt,
+      })),
+      ...agenda.meetings.map((item) => ({
+        id: "meeting-" + item.meetingId,
+        leadId: item.leadId,
+        lead: item.leadName,
+        kind: "Reunião",
+        at: item.scheduledAt,
+      })),
+    ].sort((left, right) => left.at.localeCompare(right.at))
     : []
 
   const riskGroups = buildRiskGroups(risk)
@@ -353,7 +353,7 @@ export function LeadAlerts({
         ].map((item) => (
           <article key={item.label} className="rounded-2xl border border-[#30362e] bg-[#171a17] p-5">
             <p className="text-xs font-medium text-[#afb6ac]">{item.label}</p>
-            <p className={"mt-2 text-3xl font-semibold tabular-nums " + item.color}>{item.value ?? "—"}</p>
+            <p className={"mt-2 text-3xl font-semibold tabular-nums " + item.color}>{item.value ?? "-"}</p>
           </article>
         ))}
       </div>

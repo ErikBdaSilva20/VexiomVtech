@@ -5,7 +5,7 @@ import { PageHero } from "@/components/shared/page-hero"
 import { BlogPostCard } from "@/components/blog/blog-post-card"
 
 export const metadata: Metadata = {
-  title: "Blog — Vexiom",
+  title: "Blog - Vexiom",
   description:
     "Conteúdo sobre tecnologia, sistemas e automação para negócios que querem crescer com estrutura.",
 }

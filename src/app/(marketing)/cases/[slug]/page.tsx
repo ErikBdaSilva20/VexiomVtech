@@ -7,7 +7,7 @@ import { PageHero } from "@/components/shared/page-hero"
 import { createClient } from "@/lib/supabase/server"
 
 export const metadata: Metadata = {
-  title: "Projeto — Vexiom",
+  title: "Projeto - Vexiom",
   robots: { index: true, follow: true },
 }
 
@@ -117,7 +117,7 @@ export default async function CaseDetailPage({
             <ul className="mt-6 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-2">
               {item.gallery_urls?.map((url, index) => (
                 <li key={url + index}>
-                  <CaseImage src={url} title={item.title + " — imagem " + (index + 1)} sizes="(max-width: 768px) 100vw, 50vw" />
+                  <CaseImage src={url} title={item.title + " - imagem " + (index + 1)} sizes="(max-width: 768px) 100vw, 50vw" />
                 </li>
               ))}
             </ul>

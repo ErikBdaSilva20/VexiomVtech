@@ -4,7 +4,7 @@ import Link from "next/link"
 import { LoginForm } from "./login-form"
 
 export const metadata: Metadata = {
-  title: "Entrar no painel — Vexiom",
+  title: "Entrar no painel - Vexiom",
   robots: { index: false, follow: false },
 }
 
@@ -21,7 +21,7 @@ export default function LoginPage() {
       >
         <Link
           href="/"
-          aria-label="Vexiom — página inicial"
+          aria-label="Vexiom - página inicial"
           className="mb-[calc(42*var(--unit))] inline-flex items-center gap-[12px] rounded-sm text-[#f0f0f1] outline-offset-4 focus-visible:outline-2 focus-visible:outline-vexiom-yellow"
         >
           <span className="flex size-[34px] items-center justify-center border border-vexiom-yellow text-[19px] font-[800] leading-none text-vexiom-yellow">

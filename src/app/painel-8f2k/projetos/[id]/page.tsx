@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/server"
 import { loadProjectLeadOptions } from "../lead-options"
 
 export const metadata: Metadata = {
-  title: "Projeto interno — Vexiom",
+  title: "Projeto interno - Vexiom",
   robots: { index: false, follow: false },
 }
 
@@ -70,17 +70,17 @@ export default async function ProjectDetailPage({
         <section aria-label="Resumo do projeto" className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5">
             <p className="text-xs text-[#aaa]">Lucro do projeto</p>
-            <p className="mt-2 text-2xl font-semibold text-white">{transactionCount === 0 ? "R$ 0,00" : "—"}</p>
+            <p className="mt-2 text-2xl font-semibold text-white">{transactionCount === 0 ? "R$ 0,00" : "-"}</p>
             {transactionCount !== 0 && <p className="mt-1 text-xs text-[#85867f]">Consolidado ainda indisponível</p>}
           </div>
           <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5">
             <p className="text-xs text-[#aaa]">Lançamentos vinculados</p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{transactionCount ?? "—"}</p>
+            <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{transactionCount ?? "-"}</p>
             <Link href={"/painel-8f2k/financeiro?project_id=" + project.id} className="mt-2 inline-flex text-xs font-semibold text-[#fbd020] hover:underline">Ver financeiro →</Link>
           </div>
           <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5">
             <p className="text-xs text-[#aaa]">Cases vinculados</p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{caseResult.error ? "—" : linkedCases.length}</p>
+            <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{caseResult.error ? "-" : linkedCases.length}</p>
             {project.lead_id && <Link prefetch={false} href={"/painel-8f2k/leads/" + project.lead_id} className="mt-2 inline-flex text-xs font-semibold text-[#fbd020] hover:underline">Abrir lead relacionado →</Link>}
           </div>
         </section>

@@ -1,7 +1,7 @@
 import { HERO_PRIMARY_CTA, HERO_SECONDARY_CTA } from "@/data/home-content";
 import { ArrowLink } from "@/components/shared/arrow-link";
 
-/** Primary + secondary hero CTAs — primary mails in, secondary jumps to #servicos. */
+/** Primary + secondary hero CTAs - primary mails in, secondary jumps to #servicos. */
 export function HeroActions() {
   return (
     <div className="flex items-center mt-[calc(25*var(--unit))] ml-[calc(-5*var(--unit))] [@media(max-width:1100px)]:mt-[23px] [@media(max-width:650px)]:gap-0 [@media(max-width:650px)]:mt-[26px] [@media(max-width:650px)]:ml-0">

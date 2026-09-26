@@ -7,7 +7,7 @@ import type { Database } from "@/lib/supabase/database.types"
 import { createClient } from "@/lib/supabase/server"
 
 export const metadata: Metadata = {
-  title: "Cases — Vexiom",
+  title: "Cases - Vexiom",
   description:
     "Projetos entregues pela Vexiom: sites, sistemas, lojas online e automações que geraram resultado real.",
 }

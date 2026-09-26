@@ -9,7 +9,7 @@ import type { Database } from "@/lib/supabase/database.types"
 import { createClient } from "@/lib/supabase/server"
 
 export const metadata: Metadata = {
-  title: "Financeiro — Vexiom",
+  title: "Financeiro - Vexiom",
   robots: { index: false, follow: false },
 }
 
@@ -145,9 +145,9 @@ export default async function FinancialPage({
 
         <section aria-labelledby="financial-summary-title" className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <h2 id="financial-summary-title" className="sr-only">Resumo do período</h2>
-          <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5"><p className="text-xs text-[#aaa]">Lançamentos no período</p><p className="mt-2 text-3xl font-semibold tabular-nums text-white">{failed ? "—" : total}</p></div>
-          <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5"><p className="text-xs text-[#aaa]">Saldo do período</p><p className="mt-2 text-3xl font-semibold text-white">—</p><p className="mt-1 text-xs text-[#85867f]">Consolidado ainda indisponível</p></div>
-          <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5"><p className="text-xs text-[#aaa]">Lucro por projeto</p><p className="mt-2 text-3xl font-semibold text-white">—</p><p className="mt-1 text-xs text-[#85867f]">{projectId ? "Consolidado ainda indisponível" : "Selecione um projeto para consultar"}</p></div>
+          <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5"><p className="text-xs text-[#aaa]">Lançamentos no período</p><p className="mt-2 text-3xl font-semibold tabular-nums text-white">{failed ? "-" : total}</p></div>
+          <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5"><p className="text-xs text-[#aaa]">Saldo do período</p><p className="mt-2 text-3xl font-semibold text-white">-</p><p className="mt-1 text-xs text-[#85867f]">Consolidado ainda indisponível</p></div>
+          <div className="rounded-xl border border-[#292b28] bg-[#181916] p-5"><p className="text-xs text-[#aaa]">Lucro por projeto</p><p className="mt-2 text-3xl font-semibold text-white">-</p><p className="mt-1 text-xs text-[#85867f]">{projectId ? "Consolidado ainda indisponível" : "Selecione um projeto para consultar"}</p></div>
         </section>
 
         <section aria-labelledby="financial-list-title">

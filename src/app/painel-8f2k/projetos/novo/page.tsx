@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/server"
 import { loadProjectLeadOptions } from "../lead-options"
 
 export const metadata: Metadata = {
-  title: "Novo projeto — Vexiom",
+  title: "Novo projeto - Vexiom",
   robots: { index: false, follow: false },
 }
 

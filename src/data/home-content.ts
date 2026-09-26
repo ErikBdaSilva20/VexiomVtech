@@ -309,5 +309,5 @@ export const SERVICES: ServiceItem[] = [
 export const SUPPORT_PLAN = {
   price: "R$ 30/mês",
   description:
-    "Depois da entrega, você pode contratar suporte contínuo por R$ 30/mês para manter a solução em dia — sem taxa obrigatória e sem letra miúda.",
+    "Depois da entrega, você pode contratar suporte contínuo por R$ 30/mês para manter a solução em dia, sem taxa obrigatória e sem letra miúda.",
 }

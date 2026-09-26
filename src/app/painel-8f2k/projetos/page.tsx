@@ -8,7 +8,7 @@ import type { Database } from "@/lib/supabase/database.types"
 import { createClient } from "@/lib/supabase/server"
 
 export const metadata: Metadata = {
-  title: "Projetos internos — Vexiom",
+  title: "Projetos internos - Vexiom",
   robots: { index: false, follow: false },
 }
 

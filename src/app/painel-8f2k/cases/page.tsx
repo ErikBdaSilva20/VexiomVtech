@@ -9,7 +9,7 @@ import type { Database } from "@/lib/supabase/database.types"
 import { createClient } from "@/lib/supabase/server"
 
 export const metadata: Metadata = {
-  title: "Cases do painel — Vexiom",
+  title: "Cases do painel - Vexiom",
   robots: { index: false, follow: false },
 }
 

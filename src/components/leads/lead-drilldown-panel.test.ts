@@ -7,7 +7,7 @@ import type { Database } from "@/lib/supabase/database.types"
 type LeadRow = Database["public"]["Tables"]["leads"]["Row"]
 
 // This project's vitest config only picks up `*.test.ts` (node environment,
-// no jsdom/testing-library) — see `vitest.config.ts`. The panel's
+// no jsdom/testing-library) - see `vitest.config.ts`. The panel's
 // open/close and loading/error/empty behavior is therefore exercised
 // through the pure functions that drive it (title/empty-state derivation,
 // slice → query-params mapping, and the state machine's shape) rather than
@@ -73,7 +73,7 @@ describe("truncationNote", () => {
 
   it("names the cap and the total when the count exceeds the render cap", () => {
     expect(truncationNote(DRILLDOWN_RENDER_CAP + 37)).toBe(
-      "Mostrando os primeiros " + DRILLDOWN_RENDER_CAP + " de " + (DRILLDOWN_RENDER_CAP + 37) + " — refine pela lista de leads."
+      "Mostrando os primeiros " + DRILLDOWN_RENDER_CAP + " de " + (DRILLDOWN_RENDER_CAP + 37) + ", refine pela lista de leads."
     )
   })
 })
